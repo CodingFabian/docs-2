@@ -7,6 +7,13 @@ keywords: [changelog, upgrades, updates, releases]
 # Changelog
 
 All the latest features and updates to Timescale products.
+## AWS Transit Gateway Support
+<Label type="date">January 17, 2025</Label>
+
+### AWS Transit Gateway Support
+Timescale Cloud now supports AWS Transit Gateway, which allows a customer to connect to its Timescale service hosted in the Timescale cloud through an AWS Transit Gateway. This feature is available to Scale and Enterprise customers. It will be in Early Access for a short time and available in the Timescale console very soon. 
+
+Customers interested in implementing this Early Access Feature should reach out to their Rep to get started.
 
 ## 🇮🇳 New region in India, PostgreSQL 17 upgrades, and TimescaleDB on AWS Marketplace
 <Label type="date">January 10, 2025</Label>
