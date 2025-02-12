@@ -6,17 +6,15 @@ keywords: [installation]
 ---
 
 import TimescaleDB from "versionContent/_partials/_timescaledb.mdx";
-import CTA from "versionContent/_partials/_selfhosted_cta.mdx";
 
-# Install TimescaleDB
+# Install $TIMESCALE_DB
 
 <TimescaleDB />
-<CTA />
 
-You can install self-hosted TimescaleDB for free from
+You can install self-hosted $TIMESCALE_DB for free from
 [source][self-hosted-source], or a [pre-built container][self-hosted-container].
 This guide provides instructions for installing the latest version of
-TimescaleDB. For more details about the latest release, see the
+$TIMESCALE_DB. For more details about the latest release, see the
 [release notes][release-notes] section.
 
 <Installation />

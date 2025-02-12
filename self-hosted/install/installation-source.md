@@ -5,6 +5,7 @@ products: [self_hosted]
 keywords: [installation, self-hosted]
 ---
 
+import WhatIsTSDB from "versionContent/_partials/_timescaledb-definition.mdx";
 import WhereTo from "versionContent/_partials/_where-to-next.mdx";
 import Skip from "versionContent/_partials/_selfhosted_cta.mdx";
 import SelfHostedSource from "versionContent/_partials/_install-self-hosted-source-based.mdx";
@@ -12,9 +13,9 @@ import AddTimescaleDBToDB from "versionContent/_partials/_add-timescaledb-to-a-d
 
 # Install self-hosted TimescaleDB from source
 
-TimescaleDB is a [PostgreSQL extension](https://www.postgresql.org/docs/current/external-extensions.html) for
-time series and demanding workloads that ingest and query high volumes of data. You can install a TimescaleDB
-instance on any local system, from source.
+< WhatIsTSDB />
+
+You can install a TimescaleDB instance on any local system, from source.
 
 < Skip/>
 

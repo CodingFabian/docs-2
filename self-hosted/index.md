@@ -10,13 +10,12 @@ import TimescaleDB from "versionContent/_partials/_timescaledb.mdx";
 
 # Self-hosted TimescaleDB
 
-<TimescaleDB /> 
-<CTA /> 
+<TimescaleDB />
 
-Self-hosted TimescaleDB is community supported. For additional help 
+Self-hosted $TIMESCALE_DB is community supported. For additional help 
 check out the friendly [Timescale community][community].
 
-If you'd prefer to pay for support then check out our [self-managed support][support].
+If you'd prefer to pay for support, then check out our [self-managed support][support].
 
 [self-hosted-install]: /self-hosted/:currentVersion:/install/
 [community]: https://www.timescale.com/community/
