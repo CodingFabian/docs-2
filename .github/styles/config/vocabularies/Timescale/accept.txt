@@ -1,7 +1,6 @@
 [Aa]ccessor
 Aiven
 Alertmanager
-API
 Anthropic
 async
 [Aa]utoscal(?:e|ing)
@@ -15,7 +14,7 @@ https?
 [Bb]oolean
 BSD
 [Cc]allouts?
-COPY
+[Cc]opy
 [Cc]lickstreams?
 Cloudformation
 Cloudwatch
@@ -91,7 +90,6 @@ pg_restore
 Plotly
 pre
 POSIX
-PostgreSQL
 [Pp]ooler?
 Prometheus
 PromLens
