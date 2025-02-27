@@ -1,36 +1,85 @@
 ---
-title: Integrate Stitch Data with Timescale Cloud 
-excerpt: Stitch Data is a cloud-based ETL service that helps businesses efficiently consolidate data from a variety of sources into a data warehouse. Integrate Stitch Data with Timescale Cloud
+title: Integrate Stitch with Timescale Cloud 
+excerpt: Stitch is a cloud-based ETL service that helps businesses efficiently consolidate data from a variety of sources into a data warehouse. Integrate Stitch with Timescale Cloud and Eclipse Mosquitto
 products: [cloud, mst, self_hosted]
-keywords: [EMQX, Stitch Data, IoT, MQTT, integrate]
+keywords: [Eclipse Mosquitto, Stitch, IoT, MQTT, integrate]
 ---
 
 import IntegrationPrereqs from "versionContent/_partials/_integration-prereqs.mdx";
 
-# Integrate Stitch Data with $CLOUD_LONG
+# Integrate Stitch with $CLOUD_LONG
 
-[Stitch Data][stitch] is a cloud-based ETL (Extract, Transform, Load) service that helps businesses efficiently consolidate data from a variety of sources. It is particularly useful for data integration and analytics, enabling organizations to make data-driven decisions.
+[Stitch][stitch] is a cloud-based ETL (Extract, Transform, Load) service that helps businesses efficiently consolidate data from a variety of sources. It is particularly useful for data integration and analytics, enabling organizations to make data-driven decisions.
 
-[EMQX][emqx] is a high-performance, open-source MQTT broker ideal for large-scale IoT data streaming. It supports millions of concurrent connections and provides robust features for data integration. 
+[Eclipse Mosquitto][mosquitto] is an open-source MQTT broker widely used for lightweight messaging in IoT and mobile applications.
 
-This page explains how to stream IoT data from EMQX to $CLOUD_LONG using Stitch Data.
+This page explains how to stream IoT data from Eclipse Mosquitto to $CLOUD_LONG using Stitch.
 
 ## Prerequisites
 
 <IntegrationPrereqs />
 
-- Install [open-source EMQX][emqx-download] or sign up for [EMQX Cloud][emqx-cloud].
+- Install [Eclipse Mosquitto][mosquitto-install].
 - Sign up for [Stitch Data][stitch-signup].
 
-## Create a topic and sample data in EMQX
+## Simulate IoT data in Eclipse Mosquitto
 
+To prepare sample IoT data to stream to $CLOUD_LONG:
 
+<Procedure>
 
-## Prepare your $SERVICE_LONG to receive data 
+1. **Start Eclipse Mosquitto**
 
+   Run the following command:
 
+   ```bash
+   mosquitto -v
+   ```
+1. **Publish sample data**
 
-## Connect EMQX to $CLOUD_LONG with Stitch Data
+   Run the following command to publish data to the `sensor/data` MQTT topic:
+
+   ```bash
+   mosquitto_pub -t sensor/data -m '{"temperature": 22.5, "humidity": 60}'
+   ```
+
+1. **Subscribe to topic**
+
+   Run the following command to subscribe to the `sensor/data` topic:
+
+   ```bash
+   mosquitto_sub -t sensor/data
+   ```
+
+## Prepare your $SERVICE_LONG to ingest data
+
+Create a table in $SERVICE_LONG to store IoT readings from Eclipse Mosquitto:
+
+<Procedure>
+
+1. **Connect to your $SERVICE_LONG**
+
+   Use an [SQL editor][run-queries] in $CONSOLE. For self-hosted $TIMESCALE_DB, use [`psql`][psql].
+
+1. **Create a hypertable in your $SERVICE_SHORT**
+
+   ```sql
+   CREATE TABLE sensor_data (
+       time TIMESTAMPTZ NOT NULL,
+       temperature FLOAT,
+       humidity FLOAT
+   );
+   ```
+
+1. **Convert the table into a hypertable**
+
+   ```sql
+   SELECT create_hypertable('sensor_data', 'time');
+   ```
+
+</Procedure>
+
+## Connect Eclipse Mosquitto to $CLOUD_LONG with Stitch Data
 
 
 
@@ -118,8 +167,12 @@ To connect EMQX to $CLOUD_LONG:
 
 You have successfully integrated EMQX with Timescale Cloud using Stitch Data. Now you can analyze your IoT data with powerful time-series queries and visualize it using your preferred analytics tools.
 
-[emqx]: https://www.emqx.com
-[stitch]: 
+[stitch]: https://ua.stitchdata.com/
 [emqx-download]: https://www.emqx.io/downloads
 [emqx-cloud]: https://www.emqx.com/en/cloud
 [stitch-signup]: https://www.stitchdata.com/
+[run-queries]: /getting-started/:currentVersion:/run-queries-from-console/
+[psql]: /use-timescale/:currentVersion:/integrations/psql/
+[mosquitto]: https://mosquitto.org/documentation/
+[mosquitto-install]: https://mosquitto.org/download/
+[connection-info]: /use-timescale/:currentVersion:/integrations/find-connection-details/
