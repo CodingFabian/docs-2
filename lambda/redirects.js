@@ -1,7 +1,7 @@
 module.exports = [
   {
     from: "/api/api-timescaledb/",
-    to: "https://docs.timescale.com/api/latest/",
+    to: "https://docs.timescale.com/api/latest/abc",
   },
   {
     from: "/api/data-retention/",
