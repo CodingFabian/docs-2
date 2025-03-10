@@ -794,6 +794,11 @@ module.exports = [
             excerpt: "Integrate Apache Airflow with Timescale products",
           },
           {
+            title: "AWS Glue",
+            href: "aws-glue",
+            excerpt: "Integrate AWS Glue with Timescale Cloud",
+          },
+          {
             title: "AWS Lambda",
             href: "aws-lambda",
             excerpt: "Integrate AWS Lambda with Timescale Cloud",
