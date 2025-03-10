@@ -854,9 +854,14 @@ module.exports = [
             excerpt: "Integrate Microsoft Azure with Timescale Cloud",
           },
           {
+            title: "Node-RED",
+            href: "node-red",
+            excerpt: "Integrate Node-RED with Timescale Cloud",
+          },
+          {
             title: "pgAdmin",
             href: "pgadmin",
-            excerpt: "Integrate pgAdmin with Timescale Cloud",
+            excerpt: "Integrate pgAdmin with Timescale products",
           },
           {
             title: "PostgreSQL",
