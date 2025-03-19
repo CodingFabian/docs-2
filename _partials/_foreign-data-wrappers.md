@@ -17,7 +17,7 @@ PostgreSQL FDWs are particularly useful if you manage multiple $SERVICE_LONGs wi
 
 To query another data source: 
 
-<Tabs label="Query another data source">
+<Tabs label="Query another data source" persistKey="timescalePlatform">
 
 <Tab title="Timescale Cloud">
 

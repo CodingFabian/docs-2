@@ -61,7 +61,7 @@ relational and time-series data from external files.
 
     1. Upload data from the CSVs to your $SERVICE_SHORT:
     
-       <Tabs label="Upload data to ">
+       <Tabs label="Upload data to " >
 
        <Tab title="Timescale Console">
        

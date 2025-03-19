@@ -3,7 +3,7 @@
 You can use the `apt` on Debian-based systems, `yum` on Red Hat-based systems,
 and `pacman` package manager to install the `psql` tool.
 
-<Tabs label="install psql">
+<Tabs label="install psql" persistKey="self-hostedPlatform">
 
 <Tab title="Debian">
 

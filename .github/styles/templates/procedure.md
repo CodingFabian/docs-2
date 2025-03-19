@@ -76,7 +76,7 @@ You have \<what the user will do in this section>.
 Intro sentence. This section shows how to use tabs to show multiple implementations
 of the same thing:
 
-<Tabs label="Install TimescaleDB">
+<Tabs label="Install TimescaleDB" persistKey="installTo" >
 
 <Tab title="Platform, product or reason ">
 

@@ -2,7 +2,7 @@
 
 You create a $CLOUD_LONG account to manage your $SERVICE_SHORTs and data in a centralized and efficient manner in $CONSOLE. From there, you can create and delete $SERVICE_SHORTs, run queries, manage access and billing, integrate other services, contact support, and more.
 
-<Tabs label="Create a Timescale Cloud account">
+<Tabs label="Create a Timescale Cloud account" persistKey="timescalePlatform" >
 
 <Tab title="Timescale Cloud">
 

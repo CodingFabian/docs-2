@@ -58,7 +58,7 @@ shell commands.
 
 To move your data from a self-hosted database to a Timescale Cloud service:
 
-<Tabs label="Migrate with downtime">
+<Tabs label="Migrate with downtime" persistKey="migrateFrom">
 
 <Tab title="From TimescaleDB">
 

@@ -16,7 +16,7 @@
 
 1.  **Choose the authentication method to use for the exporter**
 
-    <Tabs label="Authentication methods">
+    <Tabs label="Authentication methods" persistKey="authenticationMethod">
 
     <Tab title="IAM role">
 

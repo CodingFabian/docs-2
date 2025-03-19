@@ -44,7 +44,7 @@ Dual-write and backfill works well when:
 
 To move your data from a self-hosted database to a Timescale Cloud service:
 
-<Tabs label="Live migration">
+<Tabs label="Live migration" persistKey="migrateFrom" >
 
 <Tab title="From TimescaleDB">
 

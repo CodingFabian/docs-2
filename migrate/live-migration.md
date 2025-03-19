@@ -60,7 +60,7 @@ the live-migration Docker image.
 
 To move your data from a self-hosted database to a Timescale Cloud service:
 
-<Tabs label="Live migration">
+<Tabs label="Live migration" persistKey="migrateFrom" defaultValue="From PostgreSQL">
 
 <Tab title="From TimescaleDB">
 
