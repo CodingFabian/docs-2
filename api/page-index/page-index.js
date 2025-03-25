@@ -11,7 +11,6 @@ module.exports = [
     children: [
       {
         title: "Hypertables & chunks",
-        type: "directory",
         href: "hypertable",
         children: [
           {
