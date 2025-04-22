@@ -1,6 +1,6 @@
 module.exports = [
   {
-    title: "Databasics",
+    title: "Read and write data",
     href: "databasics",
     filePath: "index.md",
     pageComponents: ["content-list"],

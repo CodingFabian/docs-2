@@ -22,7 +22,8 @@ const Databasics = require("../databasics/page-index/page-index");
 const QueryPerformance = require("../query-performance/page-index/page-index");
 const Reference = require("../reference/page-index/page-index");
 const APIReference = require("../api-reference/page-index/page-index");
-
+const Integrations = require("../integrations/page-index/page-index");
+const Security = require("../security/page-index/page-index");
 
 module.exports = [
   ...gsgPageIndex,
@@ -31,12 +32,14 @@ module.exports = [
   ...Databasics,
   ...tutorialsPageIndex,
   ...navigationPageIndex,
+  ...Integrations,
   ...Troubleshooting,
   ...AIPageIndex,
   ...DataSecurity,
   ...DataIngestMigrate,
   ...EfficientStorage,
   ...QueryPerformance,
+  ...Security,
   ...Reference,
   ...APIReference,
   {

@@ -6,7 +6,11 @@ product: Timescale
 
 # Timescale products
 
-Timescale is Postgres made powerful. Our products are:
+Timescale is Postgres made powerful. 
+
+![Main features and tiered data](https://assets.timescale.com/docs/images/timescale-cloud-features-sigh-sigh.png )
+
+Our products are:
 
 - **Fast and scalable**: store and query data quickly and efficiently with automatic partitioning, columnar compression, and real-time aggregation. Grow effortlessly with dynamic scaling and infinite storage. Learn more
 
