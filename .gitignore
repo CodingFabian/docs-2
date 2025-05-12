@@ -6,3 +6,4 @@ _notes/
 *.swp
 .helper-scripts/hyperfunctions/target/
 .vscode/settings.json
+/node_modules/
