@@ -20,6 +20,11 @@ module.exports = [
         excerpt: "Pricing plans for Timescale Cloud services",
       },
       {
+        title: "Best practices for a production environment",
+        href: "production-environment-best-practice",
+        excerpt: "Get the most out of the features in Timescale products for your production environment",
+      },
+      {
         title: "Changelog",
         href: "changelog",
         excerpt: "A summary of the latest changes to all Timescale products.",
