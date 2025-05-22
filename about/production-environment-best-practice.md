@@ -1,11 +1,11 @@
 ---
 title: Production environment considerations
 excerpt: How to get the most out of the features in Timescale products for your production environment
-products: [cloud, mst]
-keywords: [real-time analytics, timescale cloud, timescaledb, time-series, production]
+products: [ cloud, mst ]
+keywords: [ real-time analytics, $CLOUD_LONG, timescaledb, time-series, production ]
 ---
 
-# Best practices for a production environment 
+# Best practices for a production environment
 
 Bla bla
 
@@ -13,59 +13,82 @@ Bla bla
 
 ### Multi-tenant architecture
 
-Multitenancy is a system architecture that enables multiple users (tenants), to utilize the same application or database while ensuring their data remains isolated and secure. This approach offers several advantages, such as cost efficiency, improved scalability, and optimized performance. By allowing tenants to share infrastructure and resources, multitenancy helps minimize expenses while maintaining operational effectiveness.
+Multitenancy is a system architecture that enables multiple users (tenants), to utilize the
+same application or database while ensuring their data remains isolated and secure. Advantages
+of multi-tenancy include cost efficiency, scalability, and performance optimization. By enabling tenants 
+to share infrastructure and resources, multitenancy helps minimize expenses while maintaining operational 
+effectiveness.
 
-#### Database Design Options
+$CLOUD_LONG supports the following multitenant architectures:
 
-Timescale supports two approaches for separating tenant data in a multitenant architecture:
+- **Service-per-tenant**: data for each tenant is stored in a dedicated Timescale service.
+- **Schema-per-tenant**: data for each tenant is stored in an assigned schema in a single Timescale service.
 
-1. Service per tenant.
-2. Schema per tenant.
+##### Service-per-Tenant
 
-Each of these designs comes with its own advantages and trade-offs. Let’s explore these multitenant database strategies in more detail to understand how they work and when to use them.
+In $CLOUD_LONG, a service-per-tenant model aligns with the database-per-tenant strategy, where each tenant is
+assigned a dedicated Timescale service to store and manage their data independently.  
+Since $CLOUD_LONG provisions one database per service, adopting a service-per-tenant approach involves creating a
+separate Timescale service for each tenant. This can be done through the $CLOUD_LONG interface or API. Once
+provisioned, the service is dedicated to that tenant, ensuring full data isolation and security.
 
-##### Service per Tenant
+To setup service-per-tenant:
 
-In Timescale Cloud, a service-per-tenant model aligns with the database-per-tenant strategy, where each tenant is assigned a dedicated Timescale service to store and manage their data independently.  
-Since Timescale Cloud provisions one database per service, adopting a service-per-tenant approach involves creating a separate Timescale service for each tenant. This can be done through the Timescale Cloud interface or API. Once provisioned, the service is dedicated to that tenant, ensuring full data isolation and security.
+1. 
 
-###### Advantages
+- **Advantages**
 
-* Each tenant operates within its own Timescale service, providing the highest level of separation and security.
-* Deleting a tenant is as straightforward as decommissioning the associated service, eliminating risks of unintentional data exposure.
-* Businesses operating under strict regulatory requirements benefit from strong data separation and easier compliance management.
-* Since tenants do not share the same database instance, performance issues in one tenant’s service do not impact others.
-* This approach aligns naturally with Timescale Cloud’s architecture, making it easy to implement.
+  * Each tenant operates within its own Timescale service, providing the highest level of separation and security.
+  * Deleting a tenant is as straightforward as decommissioning the associated service, eliminating risks of unintentional
+    data exposure.
+  * Businesses operating under strict regulatory requirements benefit from strong data separation and easier compliance
+    management.
+  * Since tenants do not share the same database instance, performance issues in one tenant’s service do not impact
+    others.
+  * This approach aligns naturally with $CLOUD_LONG’s architecture, making it easy to implement.
 
-###### Limitations
+- **Limitations**
 
-* Managing multiple services can become complex as the number of tenants increases. Each service requires monitoring, maintenance, backups, and updates, which can introduce administrative challenges.
-* Running a separate Timescale service for each tenant results in higher infrastructure costs compared to shared database models.
-* Since each service operates independently, CPU, memory, and disk resources are not shared across tenants, potentially leading to inefficiencies.
-* Referential integrity constraints, such as foreign keys, cannot be used across services, limiting the ability to enforce relationships between shared datasets.
-* Common datasets, such as global configuration settings or metadata, must be replicated across all services, requiring synchronization mechanisms to keep data consistent.
-* Aggregating metrics across multiple tenants requires querying separate services, making multi-tenant analytics more challenging.
+  * Managing multiple services can become complex as the number of tenants increases. Each service requires monitoring,
+    maintenance, backups, and updates, which can introduce administrative challenges.
+  * Running a separate Timescale service for each tenant results in higher infrastructure costs compared to shared
+    database models.
+  * Since each service operates independently, CPU, memory, and disk resources are not shared across tenants, potentially
+    leading to inefficiencies.
+  * Referential integrity constraints, such as foreign keys, cannot be used across services, limiting the ability to
+    enforce relationships between shared datasets.
+  * Common datasets, such as global configuration settings or metadata, must be replicated across all services, requiring
+    synchronization mechanisms to keep data consistent.
+  * Aggregating metrics across multiple tenants requires querying separate services, making multi-tenant analytics more
+    challenging.
 
-The service-per-tenant approach in Timescale Cloud is ideal for organizations that prioritize strict data isolation, regulatory compliance, and performance guarantees for each tenant. However, for businesses looking to optimize cost and operational efficiency, other multitenancy strategies, such as schema-per-tenant or shared table models, may be more suitable.
+Service-per-tenant in $CLOUD_LONG is ideal for organizations that prioritize strict data isolation,
+regulatory compliance, and performance guarantees for each tenant. 
 
-##### Schema per tenant.
+##### Schema-per-tenant
 
-The schema-per-tenant model is a multitenancy strategy that organizes each tenant’s data within its own schema while using a shared database. A schema serves as a logical container for database objects such as tables, views, and functions, ensuring data isolation within a single Timescale service.  
-A new schema is created for each tenant using the CREATE SCHEMA statement:
+The schema-per-tenant multitenancy strategy the data for each tenant is organizes within its own schema in a single
+$SERVICE_LONG. To ensure data isolation, a schema serves as a logical container for database objects such as tables, 
+views, and functions. 
 
-```
--- Create a new schema for a tenant
-CREATE SCHEMA finance_schema;
-```
+To setup schema-per-tenant:
 
-Once created, tenant-specific tables and other database objects can be added within this schema. The schema can be verified using:
+1. Create a new schema for each tenant:
+
+   ```
+   CREATE SCHEMA <schema_name>;
+   ```
+
+You add tenant-specific tables and other database objects within this schema. The schema can be
+verified using:
 
 ```
 -- Check schema details
 SELECT * FROM information_schema.schemata WHERE schema_name='finance_schema';
 ```
 
-Each tenant must have access only to their respective schema. This is enforced by creating a user and assigning the necessary privileges:
+Each tenant must have access only to their respective schema. This is enforced by creating a user and assigning the
+necessary privileges:
 
 ```
 -- Create a user for the tenant
@@ -82,7 +105,8 @@ To ensure that the tenant operates within their designated schema by default, th
 ALTER ROLE john SET search_path TO finance_schema;
 ```
 
-This ensures that when the tenant logs in, operations default to their schema. Objects created within the schema remain inaccessible to other users unless explicitly granted access.
+This ensures that when the tenant logs in, operations default to their schema. Objects created within the schema remain
+inaccessible to other users unless explicitly granted access.
 
 ```
 -- Login as tenant and create a table
@@ -98,7 +122,7 @@ GRANT SELECT ON test TO tsdbadmin;
 SELECT * FROM finance_schema.test;
 ```
 
-###### Advantages
+- **Advantages** 
 
 * Unlike the service-per-tenant model, all tenants share the same database instance, optimizing resource usage.
 * Common data, typically stored in the public schema, can be referenced across schemas.
@@ -108,19 +132,27 @@ SELECT * FROM finance_schema.test;
 * Adding new tenants is straightforward; simply create a new schema.
 * Since connections are established at the database level rather than per tenant, connection pooling is more effective.
 
-###### Limitations
+- **Limitations**
 
-* Since all tenant data resides in the same database, physical isolation is not achieved.
-* If each tenant has minimal data but the total tenant count is high, schema management may become complex.
-* Since all tenants share a single database, performance optimizations must account for workload balancing.
+
+  * Since all tenant data resides in the same database, physical isolation is not achieved.
+  * If each tenant has minimal data but the total tenant count is high, schema management may become complex.
+  * Since all tenants share a single database, performance optimizations must account for workload balancing.
+
+For businesses looking to optimize cost and operational efficiency, schema-per-tenant or shared table models may be 
+most suitable.
 
 ### Table Design
 
-When designing a PostgreSQL database schema, choosing between wide and narrow table layouts is crucial, as each has distinct advantages and trade-offs.
+When designing a PostgreSQL database schema, choosing between wide and narrow table layouts is crucial, as each has
+distinct advantages and trade-offs.
 
 #### Narrow Table Layout
 
-A narrow table typically has few data value columns but may include multiple metadata or categorizing columns. This design is beneficial when dealing with a low number of known metrics and data types. It allows for individual consideration of each metric's data type and simplifies table design by using independent tables for each metric. Extending the schema with additional metrics is straightforward; simply create a new table for the new metric.
+A narrow table typically has few data value columns but may include multiple metadata or categorizing columns. This
+design is beneficial when dealing with a low number of known metrics and data types. It allows for individual
+consideration of each metric's data type and simplifies table design by using independent tables for each metric.
+Extending the schema with additional metrics is straightforward; simply create a new table for the new metric.
 
 ```
 --Example of a simple narrow table layout
@@ -141,11 +173,14 @@ CREATE TABLE narrow_table (
 ##### Disadvantages
 
 * Managing a high number of tables can become complex.​
-* Querying multiple metrics simultaneously may require complex joins or unions, increasing query complexity and system I/O load.
+* Querying multiple metrics simultaneously may require complex joins or unions, increasing query complexity and system
+  I/O load.
 
 #### Wide Table Layout
 
-In contrast, a wide table has many columns, often with one column per metric. This design is suitable when all potential metrics are known upfront and are relatively static over time. It simplifies queries, as all related data is in a single row, eliminating the need for joins between metric tables.
+In contrast, a wide table has many columns, often with one column per metric. This design is suitable when all potential
+metrics are known upfront and are relatively static over time. It simplifies queries, as all related data is in a single
+row, eliminating the need for joins between metric tables.
 
 ```
 --Example of a wide table layout
@@ -173,7 +208,8 @@ CREATE TABLE measurement_table (
 
 #### Medium Table Layout
 
-A medium table layout strikes a balance between narrow and wide designs by creating one column for each necessary data type. This approach is practical if you know the expected data types but are uncertain about all potential metrics.
+A medium table layout strikes a balance between narrow and wide designs by creating one column for each necessary data
+type. This approach is practical if you know the expected data types but are uncertain about all potential metrics.
 
 ```
 --Example of a medium table layout
@@ -199,17 +235,26 @@ CREATE TABLE medium_table (
 
 #### Table Design Considerations for TimescaleDB
 
-When using TimescaleDB, all table layouts are fully supported with compression. Narrow tables often achieve excellent compression ratios due to their uniformity. Medium and wide tables also benefit from TimescaleDB's compression capabilities, and columns with NULL values compress efficiently, minimizing storage bloat.​
+When using TimescaleDB, all table layouts are fully supported with compression. Narrow tables often achieve excellent
+compression ratios due to their uniformity. Medium and wide tables also benefit from TimescaleDB's compression
+capabilities, and columns with NULL values compress efficiently, minimizing storage bloat.​
 
-The choice between wide, narrow, or medium table layouts depends on your specific use case, including factors like the number of metrics, data types, schema evolution, and query patterns. Understanding these factors will help you design a PostgreSQL schema that balances performance, scalability, and maintainability.​
+The choice between wide, narrow, or medium table layouts depends on your specific use case, including factors like the
+number of metrics, data types, schema evolution, and query patterns. Understanding these factors will help you design a
+PostgreSQL schema that balances performance, scalability, and maintainability.​
 
-For a more in-depth discussion, refer to [this article](https://www.timescale.com/learn/designing-your-database-schema-wide-vs-narrow-postgres-tables?utm_source=chatgpt.com).
+For a more in-depth discussion, refer
+to [this article](https://www.timescale.com/learn/designing-your-database-schema-wide-vs-narrow-postgres-tables?utm_source=chatgpt.com).
 
 ## Hypertables
 
-Hypertables are a key feature in TimescaleDB that transforms regular PostgreSQL tables into scalable, partitioned versions ideal for managing large datasets. By automatically breaking data into smaller, manageable pieces called chunks, hypertables help your database perform efficiently, even when dealing with billions of rows.
+Hypertables are a key feature in TimescaleDB that transforms regular PostgreSQL tables into scalable, partitioned
+versions ideal for managing large datasets. By automatically breaking data into smaller, manageable pieces called
+chunks, hypertables help your database perform efficiently, even when dealing with billions of rows.
 
-This section is designed to help you get the hypertable settings right from the start, ensuring your database not only performs well but can also scale without issues. Below, we'll cover essential best practices and practical steps for optimizing hypertables in TimescaleDB.
+This section is designed to help you get the hypertable settings right from the start, ensuring your database not only
+performs well but can also scale without issues. Below, we'll cover essential best practices and practical steps for
+optimizing hypertables in TimescaleDB.
 
 Creating Hypertables  
 To create a hypertable, you first create a regular PostgreSQL table. Here’s an example script:
@@ -223,9 +268,13 @@ CREATE TABLE conditions (
 );
 ```
 
-To convert this PG table to a hypertable, use the create\_hypertable() function. The function takes several arguments, but here’s what you need to be aware of:
+To convert this PG table to a hypertable, use the create\_hypertable() function. The function takes several arguments,
+but here’s what you need to be aware of:
 
-* The default chunk time interval is 7 days and is controlled by the **chunk\_time\_interval** argument. Tune the chunk\_time\_interval relative to your data ingest rates, as this interval determines how large your chunks will be. This setup must align with your service's workload and total memory allocation. Refer to the [*Sizing Hypertable Chunks*](#sizing-hypertable-chunks) section for a more detailed discussion on how to size your hypertable chunks.
+* The default chunk time interval is 7 days and is controlled by the **chunk\_time\_interval** argument. Tune the
+  chunk\_time\_interval relative to your data ingest rates, as this interval determines how large your chunks will be.
+  This setup must align with your service's workload and total memory allocation. Refer to the [*Sizing Hypertable
+  Chunks*](#sizing-hypertable-chunks) section for a more detailed discussion on how to size your hypertable chunks.
 
 ```
 --Legacy syntax
@@ -235,7 +284,10 @@ SELECT create_hypertable ('conditions','time', chunk_time_interval => INTERVAL '
 SELECT create_hypertable ('conditions', by_range('time', INTERVAL '1 day'));
 ```
 
-* An index on the partitioning column of a hypertable is created by default. This behavior is controlled by the create\_default\_indexes setting, which can be true or false. If you plan to add a lot of data to a new hypertable, consider setting this to false to speed up the data migration. You can create the index later. Please note that if you have a unique or primary key constraint, the partitioning column must be included in the unique or primary key index.
+* An index on the partitioning column of a hypertable is created by default. This behavior is controlled by the
+  create\_default\_indexes setting, which can be true or false. If you plan to add a lot of data to a new hypertable,
+  consider setting this to false to speed up the data migration. You can create the index later. Please note that if you
+  have a unique or primary key constraint, the partitioning column must be included in the unique or primary key index.
 
 ```
 --Legacy Syntax
@@ -245,7 +297,9 @@ SELECT create_hypertable ('conditions','time', chunk_time_interval => INTERVAL '
 SELECT create_hypertable ('conditions',by_range('time',INTERVAL '1 day'), create_default_indexes => false);
 ```
 
-* If you want to convert an existing table with data into a hypertable, you must set **migrate\_data** to **ON**; otherwise, the function will fail. Using the **migrate\_data** option may take longer to execute, depending on the table size. The recommended approach is to first create an empty hypertable and then insert the data into it.
+* If you want to convert an existing table with data into a hypertable, you must set **migrate\_data** to **ON**;
+  otherwise, the function will fail. Using the **migrate\_data** option may take longer to execute, depending on the
+  table size. The recommended approach is to first create an empty hypertable and then insert the data into it.
 
 ```
 --Legacy syntax
@@ -257,7 +311,8 @@ SELECT create_hypertable ('conditions',by_range('time',INTERVAL '1 day'), create
 
 ### Partitioning Hypertables
 
-You can partition a hypertable using one or a set of columns. The partitioning column/s can be of type Timestamp, Date, or Integer.
+You can partition a hypertable using one or a set of columns. The partitioning column/s can be of type Timestamp, Date,
+or Integer.
 
 This example partitions conditions hypertable on integer column id. Each chunk contains 1000 records.
 
@@ -269,7 +324,9 @@ SELECT create_hypertable('conditions', 'id', chunk_time_interval => 1000, create
 SELECT create_hypertable('conditions', by_range('id', 1000), create_default_indexes => False);
 ```
 
-For UNIX time format, use the same approach as integer based column. By default, Unix Time is represented in seconds, however, depending on your requirements, you can convert into other time units e.g milliseconds. The example below uses 1 day chunk interval equivalent in seconds (60 \* 60 \* 24).
+For UNIX time format, use the same approach as integer based column. By default, Unix Time is represented in seconds,
+however, depending on your requirements, you can convert into other time units e.g milliseconds. The example below uses
+1 day chunk interval equivalent in seconds (60 \* 60 \* 24).
 
 ```
 --Legacy Syntax
@@ -279,9 +336,14 @@ SELECT create_hypertable('conditions', 'time', chunk_time_interval => 86400,crea
 SELECT create_hypertable('conditions', by_range('time', 86400), create_default_indexes => False);
 ```
 
-For integer-based partitioning columns, we need to create [the integer\_now\_func](https://docs.timescale.com/api/latest/hypertable/set_integer_now_func/) custom function. Policies (compression, refresh, retention, or tiering) use this function to determine the age of a chunk. Below is a demonstration of how to create and use this custom function.
+For integer-based partitioning columns, we need to
+create [the integer\_now\_func](https://docs.timescale.com/api/latest/hypertable/set_integer_now_func/) custom function.
+Policies (compression, refresh, retention, or tiering) use this function to determine the age of a chunk. Below is a
+demonstration of how to create and use this custom function.
 
-For UNIX-based time, you only need to create the function once, and all hypertables can share it. On the other hand, integer-based partitioning columns use sequence to evaluate the age of chunks, which means we need to create a custom function for each hypertable.
+For UNIX-based time, you only need to create the function once, and all hypertables can share it. On the other hand,
+integer-based partitioning columns use sequence to evaluate the age of chunks, which means we need to create a custom
+function for each hypertable.
 
 UNIX time example.
 
@@ -328,84 +390,150 @@ SELECT set_integer_now_func('conditions', 'conditions_id_func');
 --Add policy (compression, refresh e.t.c)
 ```
 
-It is possible to sub-partition a chunk using additional [dimensions](https://docs.timescale.com/api/latest/hypertable/add_dimension/). An example is partitioning using the devide\_id column in addition to the primary time column. This can improve performance by parallelizing I/O operations in a setup with multiple physical disk configurations (RAID). However, we **DO NOT** encourage this design in Timescale cloud services because all chunks are created in a single EBS volume, and therefore, there’s little benefit to query performance.
+It is possible to sub-partition a chunk using
+additional [dimensions](https://docs.timescale.com/api/latest/hypertable/add_dimension/). An example is partitioning
+using the devide\_id column in addition to the primary time column. This can improve performance by parallelizing I/O
+operations in a setup with multiple physical disk configurations (RAID). However, we **DO NOT** encourage this design in
+$CLOUD_LONG services because all chunks are created in a single EBS volume, and therefore, there’s little benefit to
+query performance.
 
 ### Sizing Hypertable chunks
 
-Ideally, chunks should be small enough to fit into memory to enable quick data access without needing to read from disk, yet large enough to avoid excessive numbers of chunks, which can slow down query planning and lower compression ratio.   
-A practical approach is to configure the **chunk\_time\_interval** so that all “active” chunks (including indexes) can fit into **shared\_buffers** memory allocation. “Active” chunks are those currently receiving new data. In contrast, “inactive” chunks refer to older data that is unlikely to be changed or updated. In the Timescale cloud, shared\_buffers is set to 25% of the service's total memory by default. For instance, on a system with 64 GB of memory, ensure all active hypertable chunks plus indexes do not exceed 16 GB (25% of 64 GB).
+Ideally, chunks should be small enough to fit into memory to enable quick data access without needing to read from disk,
+yet large enough to avoid excessive numbers of chunks, which can slow down query planning and lower compression
+ratio.   
+A practical approach is to configure the **chunk\_time\_interval** so that all “active” chunks (including indexes) can
+fit into **shared\_buffers** memory allocation. “Active” chunks are those currently receiving new data. In contrast,
+“inactive” chunks refer to older data that is unlikely to be changed or updated. In the $CLOUD_LONG, shared\_buffers
+is set to 25% of the service's total memory by default. For instance, on a system with 64 GB of memory, ensure all
+active hypertable chunks plus indexes do not exceed 16 GB (25% of 64 GB).
 
 ### Hypertable Indexes
 
-By default, when you create a hypertable, TimescaleDB automatically generates indexes on the partitioning column, but you can control this behavior by setting the **create\_default\_indexes** argument of the create\_hypertable() function to false.   
-Indexes primarily speed up SELECT queries but can slow down INSERT operations. Creating unused indexes not only reduces INSERT performance but also increases storage costs unnecessarily.  
-When creating composite unique indexes, especially for maintaining data integrity, you must include all columns that comprise the unique index as partitioning columns of the hypertable, including the time column.  
-For example, if you have a hypertable partitioned on time and you want to create a composite unique index on device\_id and location\_id, you can create a unique index like this:
+By default, when you create a hypertable, TimescaleDB automatically generates indexes on the partitioning column, but
+you can control this behavior by setting the **create\_default\_indexes** argument of the create\_hypertable() function
+to false.   
+Indexes primarily speed up SELECT queries but can slow down INSERT operations. Creating unused indexes not only reduces
+INSERT performance but also increases storage costs unnecessarily.  
+When creating composite unique indexes, especially for maintaining data integrity, you must include all columns that
+comprise the unique index as partitioning columns of the hypertable, including the time column.  
+For example, if you have a hypertable partitioned on time and you want to create a composite unique index on device\_id
+and location\_id, you can create a unique index like this:
 
 ```
 CREATE UNIQUE INDEX idx_deviceid_locid_time ON hypertable_example(device_id, location_id, time DESC);
 ```
 
-Using [timescaledb.transaction\_per\_chunk](https://docs.timescale.com/api/latest/hypertable/create_index/) option avoids exclusive locks on a hypertable by creating indexes at the chunk level.
+Using [timescaledb.transaction\_per\_chunk](https://docs.timescale.com/api/latest/hypertable/create_index/) option
+avoids exclusive locks on a hypertable by creating indexes at the chunk level.
 
 ```
 CREATE UNIQUE INDEX idx_deviceid_time ON hypertable_example(device_id, time DESC) WITH (timescaledb.transaction_per_chunk);
 ```
 
-It is possible to have some indexes that are invalid. This can result from block corruption or when CREATE index command fails midway. Use the command below to identify invalid indexes. Drop and recreate such indexes.
+It is possible to have some indexes that are invalid. This can result from block corruption or when CREATE index command
+fails midway. Use the command below to identify invalid indexes. Drop and recreate such indexes.
 
 ```
 SELECT * FROM pg_index i WHERE i.indisvalid IS FALSE;
 ```
 
-When ingesting large amounts of data that involve creating many chunks (e.g., migrating historical data), properly set [maintenance\_work\_mem](https://www.postgresql.org/docs/current/runtime-config-resource.html#GUC-MAINTENANCE-WORK-MEM) to speed up index creation operations. As a general rule of thumb, you can set maintenance\_work\_mem to about 5 % of your total system RAM. [This article](https://www.timescale.com/learn/postgresql-performance-tuning-key-parameters) shares more details on key parameters to consider when tuning performance, while [this article](https://www.timescale.com/learn/postgresql-performance-tuning-optimizing-database-indexes) goes further to explain more about index optimization.
+When ingesting large amounts of data that involve creating many chunks (e.g., migrating historical data), properly
+set [maintenance\_work\_mem](https://www.postgresql.org/docs/current/runtime-config-resource.html#GUC-MAINTENANCE-WORK-MEM)
+to speed up index creation operations. As a general rule of thumb, you can set maintenance\_work\_mem to about 5 % of
+your total system RAM. [This article](https://www.timescale.com/learn/postgresql-performance-tuning-key-parameters)
+shares more details on key parameters to consider when tuning performance,
+while [this article](https://www.timescale.com/learn/postgresql-performance-tuning-optimizing-database-indexes) goes
+further to explain more about index optimization.
 
 ### Hypertable Operations
 
-Use the [DROP TABLE](https://docs.timescale.com/use-timescale/latest/hypertables/drop/) command to delete a hypertable. If the hypertable is too large, the DROP command may time out due to insufficient memory. In such cases, DROP individual chunks first using the [drop\_chunks()](https://docs.timescale.com/api/latest/hypertable/drop_chunks/) functions before issuing the DROP TABLE command.
+Use the [DROP TABLE](https://docs.timescale.com/use-timescale/latest/hypertables/drop/) command to delete a hypertable.
+If the hypertable is too large, the DROP command may time out due to insufficient memory. In such cases, DROP individual
+chunks first using the [drop\_chunks()](https://docs.timescale.com/api/latest/hypertable/drop_chunks/) functions before
+issuing the DROP TABLE command.
 
-You can [set chunk time intervals](https://docs.timescale.com/use-timescale/latest/hypertables/change-chunk-intervals/) when creating a new hypertable or modifying an existing hypertable. When you set chunk intervals for an existing hypertable, the new interval will only apply to new chunks.
+You can [set chunk time intervals](https://docs.timescale.com/use-timescale/latest/hypertables/change-chunk-intervals/)
+when creating a new hypertable or modifying an existing hypertable. When you set chunk intervals for an existing
+hypertable, the new interval will only apply to new chunks.
 
-The [ALTER](https://docs.timescale.com/use-timescale/latest/hypertables/alter/) commands on a hypertable work like a regular PostgreSQL table. Currently, we have a limitation that you need to decompress data first to add a column with constraints or defaults to a hypertable with compression enabled.
+The [ALTER](https://docs.timescale.com/use-timescale/latest/hypertables/alter/) commands on a hypertable work like a
+regular PostgreSQL table. Currently, we have a limitation that you need to decompress data first to add a column with
+constraints or defaults to a hypertable with compression enabled.
 
-To clear the bloats introduced by INSERT/ DELETE/ UPDATE operations, Timescale uses [the autovacuum](https://www.timescale.com/learn/how-to-reduce-bloat-in-large-postgresql-tables) process to reclaim wasted space. The autovacuum process is turned on by default, but the default settings may not be sufficient based on the frequency of INSERT/DELETE/UPDATE operations. This EDB [blog post](https://www.enterprisedb.com/blog/postgresql-vacuum-and-analyze-best-practice-tips-0) covers the VACUUM/ANALYZE best practices in detail.  
-Queries against bloated hypertables don’t perform optimally, and sometimes you might need to manually [VACUUM ANALYZE](https://www.postgresql.org/docs/current/sql-vacuum.html) hypertables to clear the bloats and update hypertable statistics.
+To clear the bloats introduced by INSERT/ DELETE/ UPDATE operations, Timescale
+uses [the autovacuum](https://www.timescale.com/learn/how-to-reduce-bloat-in-large-postgresql-tables) process to reclaim
+wasted space. The autovacuum process is turned on by default, but the default settings may not be sufficient based on
+the frequency of INSERT/DELETE/UPDATE operations. This
+EDB [blog post](https://www.enterprisedb.com/blog/postgresql-vacuum-and-analyze-best-practice-tips-0) covers the
+VACUUM/ANALYZE best practices in detail.  
+Queries against bloated hypertables don’t perform optimally, and sometimes you might need to
+manually [VACUUM ANALYZE](https://www.postgresql.org/docs/current/sql-vacuum.html) hypertables to clear the bloats and
+update hypertable statistics.
 
-If you intend to delete all the data in a hypertable chunk, use the [drop\_chunks()](https://docs.timescale.com/api/latest/hypertable/drop_chunks/) function instead of DELETE command to manually delete the entire chunk at once and avoid the bloats introduced by the DELETE command. If you’re deleting data as part of your business retention policies, timescale provides a [data retention](https://docs.timescale.com/api/latest/data-retention/) feature that can automate the process of deleting old data that meets your criteria.
+If you intend to delete all the data in a hypertable chunk, use
+the [drop\_chunks()](https://docs.timescale.com/api/latest/hypertable/drop_chunks/) function instead of DELETE command
+to manually delete the entire chunk at once and avoid the bloats introduced by the DELETE command. If you’re deleting
+data as part of your business retention policies, timescale provides
+a [data retention](https://docs.timescale.com/api/latest/data-retention/) feature that can automate the process of
+deleting old data that meets your criteria.
 
-You can view hypertable details from the service explorer page. We also have [informational views](https://docs.timescale.com/api/latest/informational-views/) that you can query directly from the database.
+You can view hypertable details from the service explorer page. We also
+have [informational views](https://docs.timescale.com/api/latest/informational-views/) that you can query directly from
+the database.
 
 ## Compression
 
-Compression reduces the amount of storage space required to store data. This can lead to significant cost savings, especially for large datasets. TimescaleDB uses a hybrid row/columnar storage design, where recent data is stored in an uncompressed, row-oriented format for efficient shallow and wide queries. As data ages, one can enable compression, automatically converting the data to a compressed, columnar format for deep and narrow queries. This approach allows you to achieve high ingestion rates and efficient querying of historical data while saving up on storage.
+Compression reduces the amount of storage space required to store data. This can lead to significant cost savings,
+especially for large datasets. TimescaleDB uses a hybrid row/columnar storage design, where recent data is stored in an
+uncompressed, row-oriented format for efficient shallow and wide queries. As data ages, one can enable compression,
+automatically converting the data to a compressed, columnar format for deep and narrow queries. This approach allows you
+to achieve high ingestion rates and efficient querying of historical data while saving up on storage.
 
 ### When to Use Compression
 
 Compression is most effective when:
 
-* **Data is not frequently modified:** While TimescaleDB supports data modifications inside a compressed chunk, they may become inefficient once a chunk is compressed.
-* **Query patterns shift from shallow and wide to deep and narrow:** As your application matures and you start analyzing historical trends, your queries will likely shift from needing to access many columns (wide) to focusing on specific columns over time (narrow). This is where compression shines.
-* **Data exhibits trends or patterns:** Compression algorithms are most effective when data is ordered and exhibits trends or patterns.
+* **Data is not frequently modified:** While TimescaleDB supports data modifications inside a compressed chunk, they may
+  become inefficient once a chunk is compressed.
+* **Query patterns shift from shallow and wide to deep and narrow:** As your application matures and you start analyzing
+  historical trends, your queries will likely shift from needing to access many columns (wide) to focusing on specific
+  columns over time (narrow). This is where compression shines.
+* **Data exhibits trends or patterns:** Compression algorithms are most effective when data is ordered and exhibits
+  trends or patterns.
 
 ### How does it work
 
-* **Chunking:** Hypertables are divided into smaller "chunks." Compression operates on these chunks individually, optimizing data storage within each one.
+* **Chunking:** Hypertables are divided into smaller "chunks." Compression operates on these chunks individually,
+  optimizing data storage within each one.
 
-* **Array-like Structure:** Instead of storing individual data points separately, compression groups similar values together, similar to creating a list. For example, instead of storing each data point in a separate row, you group related values in a single row, making it much more compact \- and then the compression algorithms compress that group to reduce the storage further.
+* **Array-like Structure:** Instead of storing individual data points separately, compression groups similar values
+  together, similar to creating a list. For example, instead of storing each data point in a separate row, you group
+  related values in a single row, making it much more compact \- and then the compression algorithms compress that group
+  to reduce the storage further.
 
 ### Compression Configuration Options
 
-Compression in TimescaleDB is highly configurable. You can fine-tune the compression settings to achieve optimal performance and storage efficiency. Here are the key configuration options:
+Compression in TimescaleDB is highly configurable. You can fine-tune the compression settings to achieve optimal
+performance and storage efficiency. Here are the key configuration options:
 
 * **timescaledb.compress**: This option enables or disables compression for a hypertable.
-* **timescaledb.compress\_orderby:** This option specifies how the rows in a compressed chunk are ordered. For most time-series data, ordering by the time column (**time DESC** or **time ASC**) is sufficient and often optimal. However, you can specify other columns or combinations of columns if your data has specific patterns or your queries require a different ordering.
-* **timescaledb.compress\_segmentby:** This option specifies how the compressed data is segmented. Segmenting by a column frequently used in WHERE clauses or GROUP BY clauses can significantly speed up queries. This is because TimescaleDB can efficiently filter and access data within compressed chunks based on the segmentby column. For example, if you frequently analyze data by device\_id, segmenting by device\_id will improve query performance.
-* **timescaledb.compress\_chunk\_time\_interval:** This is optional, but it allows you to specify a time interval for rolling up compressed chunks, further reducing the number of chunks.
+* **timescaledb.compress\_orderby:** This option specifies how the rows in a compressed chunk are ordered. For most
+  time-series data, ordering by the time column (**time DESC** or **time ASC**) is sufficient and often optimal.
+  However, you can specify other columns or combinations of columns if your data has specific patterns or your queries
+  require a different ordering.
+* **timescaledb.compress\_segmentby:** This option specifies how the compressed data is segmented. Segmenting by a
+  column frequently used in WHERE clauses or GROUP BY clauses can significantly speed up queries. This is because
+  TimescaleDB can efficiently filter and access data within compressed chunks based on the segmentby column. For
+  example, if you frequently analyze data by device\_id, segmenting by device\_id will improve query performance.
+* **timescaledb.compress\_chunk\_time\_interval:** This is optional, but it allows you to specify a time interval for
+  rolling up compressed chunks, further reducing the number of chunks.
 
 ### Choosing Segmentation Columns
 
 * **Uniqueness:** Select columns with low cardinality (fewer unique values) for better compression.
-* **Query Patterns:** Consider how your queries access data. Segmenting by columns frequently used in WHERE clauses or GROUP BY clauses can significantly improve query performance.
+* **Query Patterns:** Consider how your queries access data. Segmenting by columns frequently used in WHERE clauses or
+  GROUP BY clauses can significantly improve query performance.
 * **Tools:**   
   **count(distinct ...):** This SQL function allows you to count the number of distinct values in a column.
 
@@ -413,7 +541,8 @@ Compression in TimescaleDB is highly configurable. You can fine-tune the compres
 SELECT count(distinct sensor_type) FROM sensor_data;
 ```
 
-**pg\_stats view:** This PostgreSQL system view provides detailed statistics about columns, including n\_distinct (estimated number of distinct values).
+**pg\_stats view:** This PostgreSQL system view provides detailed statistics about columns, including n\_distinct (
+estimated number of distinct values).
 
 ```
 SELECT n_distinct FROM pg_stats WHERE tablename = 'sensor_data' AND attname = 'location';
@@ -421,7 +550,9 @@ SELECT n_distinct FROM pg_stats WHERE tablename = 'sensor_data' AND attname = 'l
 
 ### How to Enable Compression
 
-Compression in TimescaleDB is enabled at the hypertable level. You can enable compression using the following commands. The first command enables the compression and the latter installs a compression policy that will automate the compression of the chunks in the background.
+Compression in TimescaleDB is enabled at the hypertable level. You can enable compression using the following commands.
+The first command enables the compression and the latter installs a compression policy that will automate the
+compression of the chunks in the background.
 
 ```
 ALTER TABLE measurements SET (
@@ -433,7 +564,8 @@ ALTER TABLE measurements SET (
 SELECT add_compression_policy('measurements', INTERVAL '7 days');
 ```
 
-Note that the above command is for TimescaleDB versions older than 2.18.0. For this and newer versions, the blow command should be used:
+Note that the above command is for TimescaleDB versions older than 2.18.0. For this and newer versions, the blow command
+should be used:
 
 ```
 ALTER TABLE measurements SET (
@@ -445,13 +577,17 @@ ALTER TABLE measurements SET (
 CALL add_columnstore_policy(‘sensor_data’, after => INTERVAL ‘60d’);
 ```
 
-The first command enables compression on the **measurements** hypertable, sets the **segmentby** option to **device\_id**, and sets the **orderby** option to **time DESC**.
+The first command enables compression on the **measurements** hypertable, sets the **segmentby** option to **device\_id
+**, and sets the **orderby** option to **time DESC**.
 
 The second command creates a compression policy that automatically compresses chunks older than 7 days.
 
 ### Testing Compression
 
-1. **Identify a Test Chunk:** To isolate testing, choose an older, uncompressed chunk. Older chunks are ideal because they are less likely to be modified and typically represent data accessed less frequently. This minimizes the performance impact of any modifications or queries during testing. You can use the **show\_chunks()** function to identify suitable chunks. For example, to find chunks older than 3 days in a hypertable called **conditions**:
+1. **Identify a Test Chunk:** To isolate testing, choose an older, uncompressed chunk. Older chunks are ideal because
+   they are less likely to be modified and typically represent data accessed less frequently. This minimizes the
+   performance impact of any modifications or queries during testing. You can use the **show\_chunks()** function to
+   identify suitable chunks. For example, to find chunks older than 3 days in a hypertable called **conditions**:
 
    SQL
 
@@ -459,9 +595,15 @@ The second command creates a compression policy that automatically compresses ch
 SELECT show_chunks('conditions', older_than => INTERVAL '3 days');
 ```
 
-2. **Baseline Query Performance:** Identify the queries that are most important for your application and run them against the test chunk. Record the execution times for each query. These queries should reflect your typical usage patterns, including aggregations, filters, and time-based selections. Use **EXPLAIN ANALYZE** to understand the query plan which would show the execution time of a query.
-3. **Enable Compression:** Use the **ALTER TABLE** command to define compression settings (segment by and order by columns).
-4. **Manually Compress:** Manually compressing the test chunk allows you to test the compression settings without waiting for the automatic compression policy to run. Use the **compress\_chunk()** function with the new settings to compress the test chunk  
+2. **Baseline Query Performance:** Identify the queries that are most important for your application and run them
+   against the test chunk. Record the execution times for each query. These queries should reflect your typical usage
+   patterns, including aggregations, filters, and time-based selections. Use **EXPLAIN ANALYZE** to understand the query
+   plan which would show the execution time of a query.
+3. **Enable Compression:** Use the **ALTER TABLE** command to define compression settings (segment by and order by
+   columns).
+4. **Manually Compress:** Manually compressing the test chunk allows you to test the compression settings without
+   waiting for the automatic compression policy to run. Use the **compress\_chunk()** function with the new settings to
+   compress the test chunk  
    For versions older than 2.18.0:
 
 ```
@@ -476,7 +618,8 @@ CALL convert_to_columnstore(‘_timescaledb_internal._hyper_1_2_chunk’);
 
 Replace **'\_timescaledb\_internal.\_hyper\_1\_2\_chunk'** with the actual name of your test chunk.
 
-5. **Check Compression Ratio:**.Monitor the compression ratio achieved using the **chunk\_compression\_stats()** function. A higher compression ratio means more effective compression.
+5. **Check Compression Ratio:**.Monitor the compression ratio achieved using the **chunk\_compression\_stats()**
+   function. A higher compression ratio means more effective compression.
 
 ```
 SELECT * FROM chunk_compression_stats('conditions');
@@ -484,14 +627,24 @@ SELECT * FROM chunk_compression_stats('conditions');
 
 This command provides statistics on the compressed and uncompressed sizes of your chunks.
 
-6. **Compare Query Performance:** Re-run the baseline queries from step 2 against the compressed test chunk. Compare the execution times to the uncompressed baseline. Ideally, you should see an improvement in performance for queries that benefit from compression, such as those involving aggregations or filters on the **compress\_segmentby** column.
-7. **Iterate and Adjust:** Compression settings are not one-size-fits-all. Iterating and adjusting allows you to fine-tune the settings for your specific data and query patterns.If the initial compression settings don't provide the desired performance or compression ratio, decompress the chunk using either *decompress\_chunk*() (for versions below 2.18.0) and *convert\_to\_rowstore*(for versions onwards 2.18.0) and modify the settings. Experiment with different compress\_segmentby and compress\_orderby columns, and consider adjusting the chunk time interval if necessary. Repeat steps 4-6 with the new settings.
+6. **Compare Query Performance:** Re-run the baseline queries from step 2 against the compressed test chunk. Compare the
+   execution times to the uncompressed baseline. Ideally, you should see an improvement in performance for queries that
+   benefit from compression, such as those involving aggregations or filters on the **compress\_segmentby** column.
+7. **Iterate and Adjust:** Compression settings are not one-size-fits-all. Iterating and adjusting allows you to
+   fine-tune the settings for your specific data and query patterns.If the initial compression settings don't provide
+   the desired performance or compression ratio, decompress the chunk using either *decompress\_chunk*() (for versions
+   below 2.18.0) and *convert\_to\_rowstore*(for versions onwards 2.18.0) and modify the settings. Experiment with
+   different compress\_segmentby and compress\_orderby columns, and consider adjusting the chunk time interval if
+   necessary. Repeat steps 4-6 with the new settings.
 
 ### Compression for Continuous Aggregates
 
-Continuous aggregates themselves can also become quite large, especially when dealing with high-volume data. This is where compression comes in. They can also be compressed, further reducing storage costs and improving query performance for pre-aggregated data.
+Continuous aggregates themselves can also become quite large, especially when dealing with high-volume data. This is
+where compression comes in. They can also be compressed, further reducing storage costs and improving query performance
+for pre-aggregated data.
 
-You can enable compression on a continuous aggregate using the **ALTER MATERIALIZED VIEW** command with the **timescaledb.compress** option. Here's an example for TimescaleDB version older than 2.18.0:
+You can enable compression on a continuous aggregate using the **ALTER MATERIALIZED VIEW** command with the *
+*timescaledb.compress** option. Here's an example for TimescaleDB version older than 2.18.0:
 
 ```
 ALTER MATERIALIZED VIEW my_cagg SET (timescaledb.compress = true);
@@ -505,21 +658,30 @@ ALTER MATERIALIZED VIEW my_cagg SET (timescaledb.enable_columnstore = true);
 
 This command enables compression on the continuous aggregate named my\_cagg.
 
-While you can still refresh the compressed regions of a continuous aggregate, reviewing the refresh policy and ensuring that the compression policy does not compress actively refreshed regions for optimal performance is best practice.
+While you can still refresh the compressed regions of a continuous aggregate, reviewing the refresh policy and ensuring
+that the compression policy does not compress actively refreshed regions for optimal performance is best practice.
 
 You can similarly add a compression policy on the continuous aggregate like we previously did on the hypertable.
 
 ### Rollup-Compression
 
-Rollup compression was introduced in TimescaleDB 2.9 and later. It allows you to combine multiple smaller, uncompressed chunks into a single, larger compressed chunk. This can be particularly useful for further reducing storage costs and improving query performance, especially when dealing with a large number of small uncompressed chunks.
+Rollup compression was introduced in TimescaleDB 2.9 and later. It allows you to combine multiple smaller, uncompressed
+chunks into a single, larger compressed chunk. This can be particularly useful for further reducing storage costs and
+improving query performance, especially when dealing with a large number of small uncompressed chunks.
 
 Here's how roll-up compression works:
 
-1. **Set the compress\_chunk\_time\_interval**: When defining your compression policy, you can specify the **compress\_chunk\_time\_interval** option. This option determines the time interval for rolling up compressed chunks. For example, if your uncompressed chunk interval is one week, you could set **compress\_chunk\_time\_interval** to '2 weeks' or '6 weeks'.
+1. **Set the compress\_chunk\_time\_interval**: When defining your compression policy, you can specify the *
+   *compress\_chunk\_time\_interval** option. This option determines the time interval for rolling up compressed chunks.
+   For example, if your uncompressed chunk interval is one week, you could set **compress\_chunk\_time\_interval** to '2
+   weeks' or '6 weeks'.
 
-2. **Optimize compress\_orderby**: The default setting for **compress\_orderby** is **'time DESC'**, which can lead to inefficient re-compression during rollup. To avoid this, set **timescaledb.compress\_orderby \= 'time ASC'** to ensure efficient rollup.
+2. **Optimize compress\_orderby**: The default setting for **compress\_orderby** is **'time DESC'**, which can lead to
+   inefficient re-compression during rollup. To avoid this, set **timescaledb.compress\_orderby \= 'time ASC'** to
+   ensure efficient rollup.
 
-3. **Run compression operations**: Once you have configured the **compress\_chunk\_time\_interval**, TimescaleDB will automatically roll up uncompressed chunks into a compressed chunk when the compression policy is executed.
+3. **Run compression operations**: Once you have configured the **compress\_chunk\_time\_interval**, TimescaleDB will
+   automatically roll up uncompressed chunks into a compressed chunk when the compression policy is executed.
 
 Here's an example of how to enable roll-up compression and manually re-compress the chunks:
 
@@ -551,19 +713,22 @@ $$;
 
 ```
 
-In this example, uncompressed chunks older than one week will be rolled up into a compressed chunk with a time interval of two weeks.
+In this example, uncompressed chunks older than one week will be rolled up into a compressed chunk with a time interval
+of two weeks.
 
 #### Essential considerations for roll-up compression
 
 * The **compress\_chunk\_time\_interval** must be a multiple of the uncompressed chunk interval.
 * Rollup compression is most effective when you have many small uncompressed chunks.
-* Carefully monitor your database performance and storage usage after enabling roll-up compression to ensure it's providing the desired benefits.
+* Carefully monitor your database performance and storage usage after enabling roll-up compression to ensure it's
+  providing the desired benefits.
 
 ### Disable compression
 
 To disable compression on a hypertable, the following steps can be taken:
 
-1. Remove the compression policy: If you have a compression policy set up, you need to remove it to prevent future compressions.
+1. Remove the compression policy: If you have a compression policy set up, you need to remove it to prevent future
+   compressions.
 
 ```
 – for TimescaleDB versions older than 2.18.0
@@ -593,8 +758,6 @@ END;
 $$;
 ```
 
-
-
 3. Disable the compression on the hypertable:
 
 ```
@@ -607,22 +770,39 @@ ALTER TABLE your_hypertable_name SET (timescaledb.enable_columnstore = false);
 
 ## Backfill Operations
 
-The latest Timescaledb version allows you to modify (UPDATE/DELETE) compressed data. To ensure only necessary data is decompressed while updating data, use columns in segment-by and order-by to filter data.
+The latest Timescaledb version allows you to modify (UPDATE/DELETE) compressed data. To ensure only necessary data is
+decompressed while updating data, use columns in segment-by and order-by to filter data.
 
-When performing bulk inserts, [decompress](https://docs.timescale.com/use-timescale/latest/compression/decompress-chunks/) affected chunks first, as inserting data into compressed chunks is more computationally expensive.
+When performing bulk
+inserts, [decompress](https://docs.timescale.com/use-timescale/latest/compression/decompress-chunks/) affected chunks
+first, as inserting data into compressed chunks is more computationally expensive.
 
-Insert operations against a compressed chunk with a unique constraint or primary keys cause a small amount of data to be decompressed, allowing speculative insertion and blocking any inserts that could violate constraints.
+Insert operations against a compressed chunk with a unique constraint or primary keys cause a small amount of data to be
+decompressed, allowing speculative insertion and blocking any inserts that could violate constraints.
 
 Inserting into a hypertable with no unique constraint does not incur decompression.
 
-You can [decompress individual chunks](https://docs.timescale.com/use-timescale/latest/compression/decompress-chunks/#decompress-individual-chunks), use a [range to filter chunks](https://docs.timescale.com/use-timescale/latest/compression/decompress-chunks/#decompress-chunks-by-time), or decompress [specific chunks](https://docs.timescale.com/use-timescale/latest/compression/decompress-chunks/#decompress-chunks-on-more-precise-constraints) based on query filters.  
-The latest Timescaledb versions support direct backfill into compressed chunks. You might encounter [this limit error](https://docs.timescale.com/use-timescale/latest/compression/troubleshooting/#tuple-decompression-limit-exceeded-by-operation) when the decompression process exceeds timescaledb.max\_tuples\_decompressed\_per\_dml\_transaction (100k by default) limit. The solution provided is to disable or increase the limit.
+You
+can [decompress individual chunks](https://docs.timescale.com/use-timescale/latest/compression/decompress-chunks/#decompress-individual-chunks),
+use
+a [range to filter chunks](https://docs.timescale.com/use-timescale/latest/compression/decompress-chunks/#decompress-chunks-by-time),
+or
+decompress [specific chunks](https://docs.timescale.com/use-timescale/latest/compression/decompress-chunks/#decompress-chunks-on-more-precise-constraints)
+based on query filters.  
+The latest Timescaledb versions support direct backfill into compressed chunks. You might
+encounter [this limit error](https://docs.timescale.com/use-timescale/latest/compression/troubleshooting/#tuple-decompression-limit-exceeded-by-operation)
+when the decompression process exceeds timescaledb.max\_tuples\_decompressed\_per\_dml\_transaction (100k by default)
+limit. The solution provided is to disable or increase the limit.
 
 ### Backfill with a supplied function
 
-To make backfilling easier, you can use the [backfilling functions](https://github.com/timescale/timescaledb-extras/blob/master/backfill.sql) in the [TimescaleDB extras](https://github.com/timescale/timescaledb-extras) GitHub repository. In particular, the **decompress\_backfill** procedure automates many of the backfilling steps for you.
+To make backfilling easier, you can use
+the [backfilling functions](https://github.com/timescale/timescaledb-extras/blob/master/backfill.sql) in
+the [TimescaleDB extras](https://github.com/timescale/timescaledb-extras) GitHub repository. In particular, the *
+*decompress\_backfill** procedure automates many of the backfilling steps for you.
 
-At the psql prompt, create a temporary table with the same schema as the hypertable you want to backfill into. In this example, the table is named **example**, and the temporary table is named **cpu\_temp**
+At the psql prompt, create a temporary table with the same schema as the hypertable you want to backfill into. In this
+example, the table is named **example**, and the temporary table is named **cpu\_temp**
 
 ```
 CREATE TEMPORARY TABLE cpu_temp AS SELECT * FROM example WITH NO DATA;
@@ -630,7 +810,9 @@ CREATE TEMPORARY TABLE cpu_temp AS SELECT * FROM example WITH NO DATA;
 
 Insert your data into the temporary table.
 
-Call the **decompress\_backfill** procedure. This procedure halts the compression policy, identifies the compressed chunks that the backfilled data corresponds to, decompresses the chunks, inserts data from the backfill table into the main hypertable, and then re-enables the compression policy.
+Call the **decompress\_backfill** procedure. This procedure halts the compression policy, identifies the compressed
+chunks that the backfilled data corresponds to, decompresses the chunks, inserts data from the backfill table into the
+main hypertable, and then re-enables the compression policy.
 
 ```
 CALL decompress_backfill(
@@ -640,7 +822,9 @@ CALL decompress_backfill(
 
 ### Partially compressed chunks
 
-Backfill operations cause the affected chunks to be partially compressed. The compression policy will eventually recompress partially compressed chunks. To identify partially compressed chunks, query the catalog tables for chunks with a status of 9\.
+Backfill operations cause the affected chunks to be partially compressed. The compression policy will eventually
+recompress partially compressed chunks. To identify partially compressed chunks, query the catalog tables for chunks
+with a status of 9\.
 
 ```
 --Specific hypertable
@@ -655,7 +839,7 @@ FROM
   LEFT JOIN _timescaledb_catalog.chunk comp
 ON comp.id = c.compressed_chunk_id
 WHERE h.schema_name = 'public' and h.table_name in ('conditions') and c.status = 9;
- 
+
 --All hypertables
 SELECT 
   h.schema_name AS hypertable_schema,
@@ -672,44 +856,88 @@ WHERE c.status = 9;
 
 ## Database Migration
 
-Timescale Cloud provides multiple migration strategies based on the volume of data and the downtime you can accommodate. Each approach is designed to streamline the transition process while ensuring data integrity and minimal service disruption. Below is an overview of the available migration methods.
+$CLOUD_LONG provides multiple migration strategies based on the volume of data and the downtime you can accommodate.
+Each approach is designed to streamline the transition process while ensuring data integrity and minimal service
+disruption. Below is an overview of the available migration methods.
 
 Organizations migrating over 400GB should request Timescale support to pre-provision resources for a smoother process.
 
 ### Migrate with Downtime (pg\_dump/pg\_restore)
 
-For datasets under 100GB, pg\_dump and pg\_restore offer a straightforward migration method for transferring data from a self-hosted PostgreSQL or TimescaleDB instance to Timescale Cloud. This method is ideal for environments where some downtime is acceptable. It supports compressed hypertables without requiring decompression before migration. However, for larger datasets exceeding 100GB, live migration is recommended for efficiency. For full technical details and step-by-step guidance, refer to the [pg\_dump and restore migration guide](https://docs.timescale.com/migrate/latest/pg-dump-and-restore/).
+For datasets under 100GB, pg\_dump and pg\_restore offer a straightforward migration method for transferring data from a
+self-hosted PostgreSQL or TimescaleDB instance to $CLOUD_LONG. This method is ideal for environments where some
+downtime is acceptable. It supports compressed hypertables without requiring decompression before migration. However,
+for larger datasets exceeding 100GB, live migration is recommended for efficiency. For full technical details and
+step-by-step guidance, refer to
+the [pg\_dump and restore migration guide](https://docs.timescale.com/migrate/latest/pg-dump-and-restore/).
 
 ### Live Migration for Minimal Downtime
 
-Live migration provides an end-to-end solution for moving databases with minimal downtime, making it suitable for datasets between 100GB and 10TB+. This method leverages PostgreSQL logical replication and pgcopydb to copy data while keeping the source and target databases synchronized. It is best suited for scenarios where modifying application logic for dual writes is impractical. Live migration is not ideal for workloads exceeding 20,000 rows per second or databases with frequent UPDATE/DELETE operations on compressed tables. Organizations migrating over 400GB should engage Timescale support for assistance. For a detailed guide on live migration, visit the [live migration documentation](https://docs.timescale.com/migrate/latest/live-migration/).
+Live migration provides an end-to-end solution for moving databases with minimal downtime, making it suitable for
+datasets between 100GB and 10TB+. This method leverages PostgreSQL logical replication and pgcopydb to copy data while
+keeping the source and target databases synchronized. It is best suited for scenarios where modifying application logic
+for dual writes is impractical. Live migration is not ideal for workloads exceeding 20,000 rows per second or databases
+with frequent UPDATE/DELETE operations on compressed tables. Organizations migrating over 400GB should engage Timescale
+support for assistance. For a detailed guide on live migration, visit
+the [live migration documentation](https://docs.timescale.com/migrate/latest/live-migration/).
 
 ### Dual-Write and Backfill for High-Ingestion Workloads
 
-This strategy is designed for large-scale time-series workloads (100GB-10TB+) where minimal downtime is required. It involves three key steps: schema and relational data cloning, dual-write implementation, and backfilling historical time-series data. This method is particularly effective for append-only workloads where historical data does not require frequent updates. It supports migrations from PostgreSQL, TimescaleDB, or any database that can export data in CSV format. Since it is more complex than pg\_dump/restore, it requires careful planning and validation. For detailed implementation guidance, refer to the [dual-write and backfill documentation](https://docs.timescale.com/migrate/latest/dual-write-and-backfill/).
+This strategy is designed for large-scale time-series workloads (100GB-10TB+) where minimal downtime is required. It
+involves three key steps: schema and relational data cloning, dual-write implementation, and backfilling historical
+time-series data. This method is particularly effective for append-only workloads where historical data does not require
+frequent updates. It supports migrations from PostgreSQL, TimescaleDB, or any database that can export data in CSV
+format. Since it is more complex than pg\_dump/restore, it requires careful planning and validation. For detailed
+implementation guidance, refer to
+the [dual-write and backfill documentation](https://docs.timescale.com/migrate/latest/dual-write-and-backfill/).
 
-### Livesync from PostgreSQL to Timescale Cloud
+### Livesync from PostgreSQL to $CLOUD_LONG
 
-Livesync enables continuous real-time synchronization between a PostgreSQL source database and a Timescale Cloud service, effectively making Timescale Cloud a logical replica. It is optimized for scenarios where real-time analytics on a Timescale Cloud replica is required rather than a one-time migration. Livesync supports copying large datasets at speeds of up to 150GB per hour, but it does not migrate schema changes automatically. This feature is currently in alpha and is not recommended for production use. For more details, visit the [Livesync documentation](https://docs.timescale.com/migrate/latest/livesync/).
+Livesync enables continuous real-time synchronization between a PostgreSQL source database and a $CLOUD_LONG
+service, effectively making $CLOUD_LONG a logical replica. It is optimized for scenarios where real-time analytics
+on a $CLOUD_LONG replica is required rather than a one-time migration. Livesync supports copying large datasets at
+speeds of up to 150GB per hour, but it does not migrate schema changes automatically. This feature is currently in alpha
+and is not recommended for production use. For more details, visit
+the [Livesync documentation](https://docs.timescale.com/migrate/latest/livesync/).
 
-Each of these migration strategies provides a tailored approach based on workload requirements, ensuring a seamless transition to Timescale Cloud.
+Each of these migration strategies provides a tailored approach based on workload requirements, ensuring a seamless
+transition to $CLOUD_LONG.
 
-Migration support is available for PostgreSQL, TimescaleDB, AWS RDS, and Managed Service for Timescale users. If you encounter any issues during migration:
+Migration support is available for PostgreSQL, TimescaleDB, AWS RDS, and Managed Service for Timescale users. If you
+encounter any issues during migration:
 
 1. You can refer to the [troubleshooting guide](https://docs.timescale.com/migrate/latest/troubleshooting/)
-2. Open a support request via the [Timescale console](https://console.cloud.timescale.com/dashboard/support/email) or contact support via email at [**support@timescale.com**](mailto:support@timescale.com).
-3. Additionally, the **\#migration** channel in the Timescale [community Slack](https://slack.timescale.com/) provides direct access to developers who can assist with migration-related questions.
+2. Open a support request via the [Timescale console](https://console.cloud.timescale.com/dashboard/support/email) or
+   contact support via email at [**support@timescale.com**](mailto:support@timescale.com).
+3. Additionally, the **\#migration** channel in the Timescale [community Slack](https://slack.timescale.com/) provides
+   direct access to developers who can assist with migration-related questions.
 
-For users migrating from non-PostgreSQL databases, the recommended approach is to export data as a **.csv** file and use [**timescaledb-parallel-copy**](https://docs.timescale.com/use-timescale/latest/ingest-data/import-csv/) for efficient ingestion into Timescale Cloud. Other ingestion methods are available depending on the source database; more details can be found in the [Ingest data from other sources guide](https://docs.timescale.com/use-timescale/latest/ingest-data/).
+For users migrating from non-PostgreSQL databases, the recommended approach is to export data as a **.csv** file and
+use [**timescaledb-parallel-copy**](https://docs.timescale.com/use-timescale/latest/ingest-data/import-csv/) for
+efficient ingestion into $CLOUD_LONG. Other ingestion methods are available depending on the source database; more
+details can be found in
+the [Ingest data from other sources guide](https://docs.timescale.com/use-timescale/latest/ingest-data/).
 
 ## Continuous Aggregates (Caggs)
 
-[C-Aggs](https://docs.timescale.com/use-timescale/latest/continuous-aggregates/about-continuous-aggregates/) speeds up query performance by pre-aggregating raw data (in hypertables). This reduces the overall query cost and lowers total query execution time.
+[C-Aggs](https://docs.timescale.com/use-timescale/latest/continuous-aggregates/about-continuous-aggregates/) speeds up
+query performance by pre-aggregating raw data (in hypertables). This reduces the overall query cost and lowers total
+query execution time.
 
-Statistics queries that use general-purpose aggregate functions like AVG, COUNT, MAX, MIN, and SUM can benefit data to C-Aggs. [This blog](https://www.timescale.com/learn/data-aggregation-postgresql) talks more about data aggregation, and you can learn more about aggregation best practices from [this other blog](https://www.timescale.com/learn/postgresql-aggregation-best-practices).  
-If you have statistical queries that are too expensive (take more time and resources at run time), consider implementing Caggs.
+Statistics queries that use general-purpose aggregate functions like AVG, COUNT, MAX, MIN, and SUM can benefit data to
+C-Aggs. [This blog](https://www.timescale.com/learn/data-aggregation-postgresql) talks more about data aggregation, and
+you can learn more about aggregation best practices
+from [this other blog](https://www.timescale.com/learn/postgresql-aggregation-best-practices).  
+If you have statistical queries that are too expensive (take more time and resources at run time), consider implementing
+Caggs.
 
-By default, when you [create a continuous aggregate](https://docs.timescale.com/use-timescale/latest/continuous-aggregates/create-a-continuous-aggregate/#create-continuous-aggregates), the entire hypertable is populated with data immediately. This can take time, especially if you have a lot of historical data. We recommend to utilize the "[WITH NO DATA](https://docs.timescale.com/use-timescale/latest/continuous-aggregates/create-a-continuous-aggregate/#using-the-with-no-data-option)" option when creating a Continuous Aggregate. It will create the view instantly, without waiting for the entire dataset to be processed. Here’s an example of creating a Cagg using “WITH NO DATA” option.
+By default, when
+you [create a continuous aggregate](https://docs.timescale.com/use-timescale/latest/continuous-aggregates/create-a-continuous-aggregate/#create-continuous-aggregates),
+the entire hypertable is populated with data immediately. This can take time, especially if you have a lot of historical
+data. We recommend to utilize
+the "[WITH NO DATA](https://docs.timescale.com/use-timescale/latest/continuous-aggregates/create-a-continuous-aggregate/#using-the-with-no-data-option)"
+option when creating a Continuous Aggregate. It will create the view instantly, without waiting for the entire dataset
+to be processed. Here’s an example of creating a Cagg using “WITH NO DATA” option.
 
 ```
 CREATE MATERIALIZED VIEW cagg_rides_view
@@ -725,7 +953,9 @@ GROUP BY vendor_id, time_bucket('1h', pickup_datetime)
 WITH NO DATA;
 ```
 
-Use [refresh policies](https://docs.timescale.com/use-timescale/latest/continuous-aggregates/refresh-policies/) to refresh the Cagg automatically. This example adds a refresh policy to the cagg\_rides\_view Cagg that does a full refresh.
+Use [refresh policies](https://docs.timescale.com/use-timescale/latest/continuous-aggregates/refresh-policies/) to
+refresh the Cagg automatically. This example adds a refresh policy to the cagg\_rides\_view Cagg that does a full
+refresh.
 
 ```
 SELECT add_continuous_aggregate_policy('cagg_rides_view',
@@ -734,7 +964,10 @@ SELECT add_continuous_aggregate_policy('cagg_rides_view',
   schedule_interval => INTERVAL '30 minutes');
 ```
 
-After a full refresh, remember to properly set refresh window (start\_offset) to a reasonable window. If your workload is append only, keep the refresh window very narrow. If you choose to set end\_offset to NULL, ensure to confirm that you do not have future chunks as these might lead to wrong aggregate values. Here’s an example that modifies the refresh policy configs to use a smaller refresh window of 1 hour and sets end\_offset to null:
+After a full refresh, remember to properly set refresh window (start\_offset) to a reasonable window. If your workload
+is append only, keep the refresh window very narrow. If you choose to set end\_offset to NULL, ensure to confirm that
+you do not have future chunks as these might lead to wrong aggregate values. Here’s an example that modifies the refresh
+policy configs to use a smaller refresh window of 1 hour and sets end\_offset to null:
 
 ```
 --You can chose to drop the refresh policy and add it using the proper settings.
@@ -751,21 +984,31 @@ SELECT add_continuous_aggregate_policy('cagg_rides_view',
   schedule_interval => INTERVAL '5 minutes');
 ```
 
-
-If necessary, you can also [manually refresh](https://docs.timescale.com/api/latest/continuous-aggregates/refresh_continuous_aggregate/) it. If the underlying hypertable (or Cagg in the case of Hierarchical Caggs) has retention policies, ensure the Cagg refresh policy doesn’t overlap with [data retention](https://docs.timescale.com/use-timescale/latest/data-retention/data-retention-with-continuous-aggregates/). This can cause unintended data loss if not well planned. An example of manual Cagg refresh with a refresh window of 5 days.
+If necessary, you can
+also [manually refresh](https://docs.timescale.com/api/latest/continuous-aggregates/refresh_continuous_aggregate/) it.
+If the underlying hypertable (or Cagg in the case of Hierarchical Caggs) has retention policies, ensure the Cagg refresh
+policy doesn’t overlap
+with [data retention](https://docs.timescale.com/use-timescale/latest/data-retention/data-retention-with-continuous-aggregates/).
+This can cause unintended data loss if not well planned. An example of manual Cagg refresh with a refresh window of 5
+days.
 
 ```
 CALL refresh_continuous_aggregate('cagg_rides_view', '2024-02-01', '2024-02-05');
 ```
 
-You can automate manual refresh using [User Defined Action](https://docs.timescale.com/use-timescale/latest/user-defined-actions/about-user-defined-actions/) (UDA) in the following scenarios:
+You can automate manual refresh
+using [User Defined Action](https://docs.timescale.com/use-timescale/latest/user-defined-actions/about-user-defined-actions/) (
+UDA) in the following scenarios:
 
 * When all your policies exceed **timescaledb.max\_background\_workers** limit.
-   * This is not a hard limit but assuming all your policies execute concurrently, the database will run out of background workers.
+   * This is not a hard limit but assuming all your policies execute concurrently, the database will run out of
+     background workers.
    * This would require you to cluster several Caggs refresh in a single UDA.
-* To improve a Cagg refresh performance by customizing some database parameters e.g tune memory requirements or parallelism level.
+* To improve a Cagg refresh performance by customizing some database parameters e.g tune memory requirements or
+  parallelism level.
 
-Below is an example that uses a UDA to manually refreshes two Caggs, sets **work\_mem** to **512MB**, sets **max\_parallel\_workers\_per\_gather** to **4**, and finally adds a background job to run every 10 minutes:
+Below is an example that uses a UDA to manually refreshes two Caggs, sets **work\_mem** to **512MB**, sets *
+*max\_parallel\_workers\_per\_gather** to **4**, and finally adds a background job to run every 10 minutes:
 
 ```
 --Create a UDA to manually refresh CAGGs and set parameters
@@ -790,7 +1033,10 @@ $$;
 SELECT add_job('refresh_cagg_manual', schedule_interval => INTERVAL '10 minutes', initial_start => now());
 ```
 
-When you create a Cagg, [real-time aggregate](https://docs.timescale.com/use-timescale/latest/continuous-aggregates/real-time-aggregates/) feature is disabled by default. real-time aggregation JOINs materialized data with the hypertable data to include the most recent chunk’s data. Here are a few points to help you determine if your use case is valid for real-time Cagg :
+When you create a
+Cagg, [real-time aggregate](https://docs.timescale.com/use-timescale/latest/continuous-aggregates/real-time-aggregates/)
+feature is disabled by default. real-time aggregation JOINs materialized data with the hypertable data to include the
+most recent chunk’s data. Here are a few points to help you determine if your use case is valid for real-time Cagg :
 
 * How sensitive are your reporting needs to the most recent data?
 * What gap can you tolerate between aggregated (Cagg) and raw hypertable (new data after Cagg refresh)?
@@ -806,13 +1052,28 @@ ALTER MATERIALIZED VIEW cagg_rides_view set (timescaledb.materialized_only = tru
 ALTER MATERIALIZED VIEW cagg_rides_view set (timescaledb.materialized_only = false);
 ```
 
-You can also create Caggs against other Caggs using [Hierarchical Continuous aggregates](https://docs.timescale.com/use-timescale/latest/continuous-aggregates/hierarchical-continuous-aggregates/). This helps reduce computational costs and resources required to aggregate raw data.  A simple example would look like: Hypertable (raw data) \-\> Seconds \-\> Minutes \-\> Hourly \-\> Daily \-\> Weekly \-\> Monthly e.t.c. Take note of these [restrictions](https://docs.timescale.com/use-timescale/latest/continuous-aggregates/hierarchical-continuous-aggregates/#restrictions) when creating Hierarchical Caggs. Below is a demonstration of how to create Hierarchical Caggs using the example highlighted above:
+You can also create Caggs against other Caggs
+using [Hierarchical Continuous aggregates](https://docs.timescale.com/use-timescale/latest/continuous-aggregates/hierarchical-continuous-aggregates/).
+This helps reduce computational costs and resources required to aggregate raw data. A simple example would look like:
+Hypertable (raw data) \-\> Seconds \-\> Minutes \-\> Hourly \-\> Daily \-\> Weekly \-\> Monthly e.t.c. Take note of
+these [restrictions](https://docs.timescale.com/use-timescale/latest/continuous-aggregates/hierarchical-continuous-aggregates/#restrictions)
+when creating Hierarchical Caggs. Below is a demonstration of how to create Hierarchical Caggs using the example
+highlighted above:
 
 ```
 
 ```
 
-By default, composite indexes are [automatically created](https://docs.timescale.com/use-timescale/latest/continuous-aggregates/create-index/#automatically-created-indexes) for each GROUP BY column and the bucket. This behavior can be [turned off](https://docs.timescale.com/use-timescale/latest/continuous-aggregates/create-index/#turn-off-automatic-index-creation) when creating a Cagg. You can also [manually add indexes](https://docs.timescale.com/use-timescale/latest/continuous-aggregates/create-index/#manually-create-and-drop-indexes) on Caggs if necessary. Use the [EXPLAIN PLAN](https://www.postgresql.org/docs/current/using-explain.html) to evaluate query performance against the Cagg before deciding to add a new index. Check on [Caggs index limitations](https://docs.timescale.com/use-timescale/latest/continuous-aggregates/create-index/#limitations-on-created-indexes). To add an index on a Cagg, use the standard CREATE INDEX command:
+By default, composite indexes
+are [automatically created](https://docs.timescale.com/use-timescale/latest/continuous-aggregates/create-index/#automatically-created-indexes)
+for each GROUP BY column and the bucket. This behavior can
+be [turned off](https://docs.timescale.com/use-timescale/latest/continuous-aggregates/create-index/#turn-off-automatic-index-creation)
+when creating a Cagg. You can
+also [manually add indexes](https://docs.timescale.com/use-timescale/latest/continuous-aggregates/create-index/#manually-create-and-drop-indexes)
+on Caggs if necessary. Use the [EXPLAIN PLAN](https://www.postgresql.org/docs/current/using-explain.html) to evaluate
+query performance against the Cagg before deciding to add a new index. Check
+on [Caggs index limitations](https://docs.timescale.com/use-timescale/latest/continuous-aggregates/create-index/#limitations-on-created-indexes).
+To add an index on a Cagg, use the standard CREATE INDEX command:
 
 ```
 --This adds an index against the avg_fare column 
@@ -834,8 +1095,14 @@ WITH NO DATA;
 
 ```
 
-Timescale Cloud uses UTC timezone by default. You can change Timescale cloud service Timezone at the database level (ALTER DATABASE tsdb SET TIMEZONE TO 'Europe/Berlin';) or at the role level (ALTER ROLE readonly SET TIMEZONE TO 'Europe/Berlin';). The [pg\_timezone\_names](https://www.postgresql.org/docs/current/view-pg-timezone-names.html) view provides a list of all supported Timezones.   
-Caggs supports the local Timezone by default. You can [define a Timezone](https://docs.timescale.com/use-timescale/latest/continuous-aggregates/time/#declaring-an-explicit-timezone), but it will be static. If you have users spread across different regions and want Caggs to report on Timezones specific to each region, create a Cagg for each region as a workaround.
+$CLOUD_LONG uses UTC timezone by default. You can change $CLOUD_LONG service Timezone at the database level (
+ALTER DATABASE tsdb SET TIMEZONE TO 'Europe/Berlin';) or at the role level (ALTER ROLE readonly SET TIMEZONE TO '
+Europe/Berlin';). The [pg\_timezone\_names](https://www.postgresql.org/docs/current/view-pg-timezone-names.html) view
+provides a list of all supported Timezones.   
+Caggs supports the local Timezone by default. You
+can [define a Timezone](https://docs.timescale.com/use-timescale/latest/continuous-aggregates/time/#declaring-an-explicit-timezone),
+but it will be static. If you have users spread across different regions and want Caggs to report on Timezones specific
+to each region, create a Cagg for each region as a workaround.
 
 ```
 --Check the current Timezone
@@ -845,7 +1112,8 @@ show timezone;
 select * from pg_timezone_names where name like '%UTC%';
 ```
 
-The example below creates a Cagg using the default UTC timezone on the view bucket, and explicitly defines another column to display the preferred timezone.
+The example below creates a Cagg using the default UTC timezone on the view bucket, and explicitly defines another
+column to display the preferred timezone.
 
 ```
 --To create a Cagg with an explicit timezone column.
@@ -865,25 +1133,45 @@ WITH NO DATA;
 
 To drop data from a Cagg, you can either:
 
-* [Drop the view directly](https://docs.timescale.com/use-timescale/latest/continuous-aggregates/drop-data/#drop-a-continuous-aggregate-view) using DROP MATERIALIZED VIEW.
-* You can [manually drop](https://docs.timescale.com/use-timescale/latest/continuous-aggregates/drop-data/#drop-raw-data-from-a-hypertable) hypertable chunks using the [drop\_chunks](https://docs.timescale.com/use-timescale/latest/data-retention/manually-drop-chunks/#manually-drop-chunks) function or set up [retention policies](https://docs.timescale.com/use-timescale/latest/data-retention/create-a-retention-policy/) and then refresh the Cagg manually or by adjusting the start\_offset argument of the refresh policy.
+* [Drop the view directly](https://docs.timescale.com/use-timescale/latest/continuous-aggregates/drop-data/#drop-a-continuous-aggregate-view)
+  using DROP MATERIALIZED VIEW.
+* You
+  can [manually drop](https://docs.timescale.com/use-timescale/latest/continuous-aggregates/drop-data/#drop-raw-data-from-a-hypertable)
+  hypertable chunks using
+  the [drop\_chunks](https://docs.timescale.com/use-timescale/latest/data-retention/manually-drop-chunks/#manually-drop-chunks)
+  function or set
+  up [retention policies](https://docs.timescale.com/use-timescale/latest/data-retention/create-a-retention-policy/) and
+  then refresh the Cagg manually or by adjusting the start\_offset argument of the refresh policy.
 * Drop Cagg’s materialized hypertable chunks using the drop\_chunks function.
 
-Caggs are supported by [materialized hypertables](https://docs.timescale.com/use-timescale/latest/continuous-aggregates/materialized-hypertables/), which adopt the same structure as regular hypertables.
+Caggs are supported
+by [materialized hypertables](https://docs.timescale.com/use-timescale/latest/continuous-aggregates/materialized-hypertables/),
+which adopt the same structure as regular hypertables.
 
-[Enabling compression](https://docs.timescale.com/use-timescale/latest/continuous-aggregates/compression-on-continuous-aggregates/#compress-continuous-aggregates) on Caggs follows a similar approach to hypertable compression. When compression is enabled and no other options are provided, the segment\_by value will be automatically set to the group by columns of the continuous aggregate and the time\_bucket column will be used as the order\_by column in the compression configuration.
+[Enabling compression](https://docs.timescale.com/use-timescale/latest/continuous-aggregates/compression-on-continuous-aggregates/#compress-continuous-aggregates)
+on Caggs follows a similar approach to hypertable compression. When compression is enabled and no other options are
+provided, the segment\_by value will be automatically set to the group by columns of the continuous aggregate and the
+time\_bucket column will be used as the order\_by column in the compression configuration.
 
 ```
 ALTER MATERIALIZED VIEW cagg_rides_view set (timescaledb.compress = true);
 ```
 
-You can also customize the **segment\_by** and **order\_by** arguments columns to align with the filters used in your queries. If you add a custom index to a Cagg, ensure the index’s columns are part of the **segment\_by** or **order\_by** arguments. If you enable compression in a Cagg and do not specify **segment\_by** or **order\_by** columns, these arguments are automatically set to the columns used in the group by clause of the Cagg view definition.
+You can also customize the **segment\_by** and **order\_by** arguments columns to align with the filters used in your
+queries. If you add a custom index to a Cagg, ensure the index’s columns are part of the **segment\_by** or **order\_by
+** arguments. If you enable compression in a Cagg and do not specify **segment\_by** or **order\_by** columns, these
+arguments are automatically set to the columns used in the group by clause of the Cagg view definition.
 
-Always check the [troubleshooting](https://docs.timescale.com/use-timescale/latest/continuous-aggregates/troubleshooting/) page for common Caggs errors.
+Always check
+the [troubleshooting](https://docs.timescale.com/use-timescale/latest/continuous-aggregates/troubleshooting/) page for
+common Caggs errors.
 
 ## Data Retention
 
-You can automatically delete historical data by setting up [data retention policies](https://docs.timescale.com/use-timescale/latest/data-retention/create-a-retention-policy/) or by [manually dropping](https://docs.timescale.com/use-timescale/latest/data-retention/manually-drop-chunks/) hypertable chunks that meet certain criteria e.g. “data older than one year”.
+You can automatically delete historical data by setting
+up [data retention policies](https://docs.timescale.com/use-timescale/latest/data-retention/create-a-retention-policy/)
+or by [manually dropping](https://docs.timescale.com/use-timescale/latest/data-retention/manually-drop-chunks/)
+hypertable chunks that meet certain criteria e.g. “data older than one year”.
 
 ### Add data retention policy
 
@@ -895,7 +1183,10 @@ SELECT add_retention_policy('conditions', INTERVAL '1 year);
 
 ### Remove data retention policy
 
-If you’ve defined a retention policy and it is no longer needed, use the [remove\_retention\_policy()](https://docs.timescale.com/use-timescale/latest/data-retention/create-a-retention-policy/#remove-a-data-retention-policy) function to remove it. You can also disable the policy by setting the **scheduled** argument to **False** using the [alter\_job()](https://docs.timescale.com/api/latest/actions/alter_job/) function.
+If you’ve defined a retention policy and it is no longer needed, use
+the [remove\_retention\_policy()](https://docs.timescale.com/use-timescale/latest/data-retention/create-a-retention-policy/#remove-a-data-retention-policy)
+function to remove it. You can also disable the policy by setting the **scheduled** argument to **False** using
+the [alter\_job()](https://docs.timescale.com/api/latest/actions/alter_job/) function.
 
 ```
 --Remove data retention policy from conditions hypertable
@@ -910,13 +1201,19 @@ select alter_job(job_id,scheduled => False);
 
 ## Tiered Storage
 
-Timescale provides layered storage, with the first layer comprising uncompressed data and compressed data as the second. These two layers are stored in high-performance EBS volumes.   
-The third layer ([object storage](https://docs.timescale.com/use-timescale/latest/data-tiering/about-data-tiering/)) stores infrequently accessed data with lower performance requirements in AWS S3 storage.  
+Timescale provides layered storage, with the first layer comprising uncompressed data and compressed data as the second.
+These two layers are stored in high-performance EBS volumes.   
+The third layer ([object storage](https://docs.timescale.com/use-timescale/latest/data-tiering/about-data-tiering/))
+stores infrequently accessed data with lower performance requirements in AWS S3 storage.  
 Object storage lowers storage cost, scales storage beyond the current 16 TB limit and data is transparently queriable.
 
 ### Add a data tiering policy
 
-To tier data, you first [enable](https://docs.timescale.com/use-timescale/latest/data-tiering/enabling-data-tiering/#enable-tiered-storage) it from the service console Overview page. Then, add a data [tiering policy](https://docs.timescale.com/use-timescale/latest/data-tiering/enabling-data-tiering/#add-a-tiering-policy) to automate data tiering using the add\_tiering\_policy() function.  
+To tier data, you
+first [enable](https://docs.timescale.com/use-timescale/latest/data-tiering/enabling-data-tiering/#enable-tiered-storage)
+it from the service console Overview page. Then, add a
+data [tiering policy](https://docs.timescale.com/use-timescale/latest/data-tiering/enabling-data-tiering/#add-a-tiering-policy)
+to automate data tiering using the add\_tiering\_policy() function.  
 The example below adds a tiering policy to remove
 
 ```
@@ -933,7 +1230,8 @@ SELECT remove_tiering_policy('conditions');
 
 ### Tier or untier chunks manually
 
-Sometimes, there’s a need to tier or untier chunks manually. An example is when you’re almost reaching the 16 TB storage limit, you can manually tier chunks to free up storage space.
+Sometimes, there’s a need to tier or untier chunks manually. An example is when you’re almost reaching the 16 TB storage
+limit, you can manually tier chunks to free up storage space.
 
 ```
 -- First display the chunks to tier using show_chunks() function or by querying from timescaledb_information.chunks view
@@ -947,7 +1245,8 @@ select tier_chunk(c) from show_chunks('conditions', older_than => INTERVAL '3 mo
 
 ```
 
-Tiered data is immutable; therefore, if you need to modify tiered data, you need to untier the data first. untier\_chunk() function is used to untier chunks.
+Tiered data is immutable; therefore, if you need to modify tiered data, you need to untier the data first.
+untier\_chunk() function is used to untier chunks.
 
 ```
 CALL untier_chunk('_hyper_1_1_chunk');
@@ -969,7 +1268,8 @@ SELECT * FROM timescaledb_osm.chunks_queued_for_tiering where hypertable_name='c
 
 ### Disabling Tiering
 
-Sometimes, you want to move data from tiered storage back to high-performance EBS storage. Before moving forward, ensure you have enough free storage to accommodate untiered chunks.  
+Sometimes, you want to move data from tiered storage back to high-performance EBS storage. Before moving forward, ensure
+you have enough free storage to accommodate untiered chunks.  
 You must first **untier** all data or **drop** the tiered data before disabling data tiering.
 
 ```
@@ -978,7 +1278,10 @@ select disable_tiering('conditions');
 
 ### Querying tiered data
 
-To query tiered data, you must enable **timescaledb.enable\_tiered\_reads** parameter. This parameter is disabled by default. You can configure the setting at the [service console](https://docs.timescale.com/use-timescale/latest/configuration/customize-configuration/) as demonstrated on this page or by using the SET command at the database or session level.
+To query tiered data, you must enable **timescaledb.enable\_tiered\_reads** parameter. This parameter is disabled by
+default. You can configure the setting at
+the [service console](https://docs.timescale.com/use-timescale/latest/configuration/customize-configuration/) as
+demonstrated on this page or by using the SET command at the database or session level.
 
 ```
 --To set the parameter at the database level.
@@ -994,76 +1297,109 @@ Once this setting is enabled, you can use a standard SELECT statement to query t
 
 ### Creating your Service
 
-If you’d prefer, you can interact with your Timescale database via the Timescale Cloud Console rather than doing so directly through your terminal.
+If you’d prefer, you can interact with your Timescale database via the $CLOUD_LONG Console rather than doing so
+directly through your terminal.
 
 ![][image2]
 
-By doing so, you can take advantage of several features of the console that better help you to visualize, modify, and manage your data.
+By doing so, you can take advantage of several features of the console that better help you to visualize, modify, and
+manage your data.
 
-By going to the **Services** tab, you can view all of the services created under your project ID. If you do not have a service yet, you can click on the **New service** button to create your first one.
+By going to the **Services** tab, you can view all of the services created under your project ID. If you do not have a
+service yet, you can click on the **New service** button to create your first one.
 
 ![][image3]  
-You first choose your required capabilities based upon what you intend to use the service for. Many of our customers use us primarily for **Time series and analytics**, however you can also create a vanilla **PostgreSQL** service, or take advantage of our **AI and Vector** capabilities. For demonstration purposes, lets select the first option.
+You first choose your required capabilities based upon what you intend to use the service for. Many of our customers use
+us primarily for **Time series and analytics**, however you can also create a vanilla **PostgreSQL** service, or take
+advantage of our **AI and Vector** capabilities. For demonstration purposes, lets select the first option.
 
 ![][image4]
 
-You then select the region that you would like to create your service in. You should generally consider the geographic location of the majority of your end users when selecting a region for your service.
+You then select the region that you would like to create your service in. You should generally consider the geographic
+location of the majority of your end users when selecting a region for your service.
 
 ![][image5]
 
-You can then choose the compute and memory size for your service. By providing an estimate for how much data you will be working with, Timescale provides you with a recommendation for the most appropriate size for your service.
+You can then choose the compute and memory size for your service. By providing an estimate for how much data you will be
+working with, Timescale provides you with a recommendation for the most appropriate size for your service.
 
 ![][image6]
 
-Then, select the type of environment this will be, as well as whether or not you would like to create an HA replica to ensure that your service is always available. If you are unsure of whether to create one, Timescale will again recommend one based on what kind of environment you are creating.
+Then, select the type of environment this will be, as well as whether or not you would like to create an HA replica to
+ensure that your service is always available. If you are unsure of whether to create one, Timescale will again recommend
+one based on what kind of environment you are creating.
 
 ![][image7]
 
-Finally, you can configure additional power-ups such as **Connection pooling** or connecting to your Timescale service directly from your own AWS **VPC**. These features can always be enabled/disabled afterwards if your business needs change.
+Finally, you can configure additional power-ups such as **Connection pooling** or connecting to your Timescale service
+directly from your own AWS **VPC**. These features can always be enabled/disabled afterwards if your business needs
+change.
 
 ### Interacting with your Service
 
-Once you have created your service, you can then go back to the **Services** tab and click on your service to begin interacting with it.
+Once you have created your service, you can then go back to the **Services** tab and click on your service to begin
+interacting with it.
 
 ![][image8]
 
-The Cloud Console offers several headers that allow you to interact with your database in various ways. An example would be the **Explorer** tab, where you can view information regarding your hypertables, compression, and configured polices.
+The Cloud Console offers several headers that allow you to interact with your database in various ways. An example would
+be the **Explorer** tab, where you can view information regarding your hypertables, compression, and configured polices.
 
 ![][image9]
 
-Another useful tab is the **Jobs** tab, where you can find information on the last run of your jobs, such as a compression job or a refresh of a continuous aggregate. This view is helpful for noticing job failures, which may indicate an underlying issue.
+Another useful tab is the **Jobs** tab, where you can find information on the last run of your jobs, such as a
+compression job or a refresh of a continuous aggregate. This view is helpful for noticing job failures, which may
+indicate an underlying issue.
 
 ![][image10]  
-There is also a built in **SQL Editor**, as well as the **Operations** tab which allows you to perform administrative actions on your service, such as modifying the CPU/memory, creating HA/read replicas, setting database parameters, and even changing the password of the service.
+There is also a built in **SQL Editor**, as well as the **Operations** tab which allows you to perform administrative
+actions on your service, such as modifying the CPU/memory, creating HA/read replicas, setting database parameters, and
+even changing the password of the service.
 
 ![][image11]
 
-The **Operations** tab also allows you to see what continuous aggregates you have created by going to the **Service management** section.
+The **Operations** tab also allows you to see what continuous aggregates you have created by going to the **Service
+management** section.
 
-There are also some tabs that can be very useful for observing trends in your metrics over time, or analyzing log messages to troubleshoot any issues. These can be found in the **Metrics** and **Logs** headers respectively.
+There are also some tabs that can be very useful for observing trends in your metrics over time, or analyzing log
+messages to troubleshoot any issues. These can be found in the **Metrics** and **Logs** headers respectively.
 
 ![][image12]  
-The **Metrics** tab will allow you to visualize changes in your CPU and Memory over time. In the top left corner, you can also adjust the timeframe of the graph. In the instance that you have created a replica, you can also view its metrics on this page by selecting it in a dropdown menu in the top-left corner.
+The **Metrics** tab will allow you to visualize changes in your CPU and Memory over time. In the top left corner, you
+can also adjust the timeframe of the graph. In the instance that you have created a replica, you can also view its
+metrics on this page by selecting it in a dropdown menu in the top-left corner.
 
-The other header, **Logs**, provides a helpful insight as to the activity that has been going on inside your service. You can filter based on the severity of each log message, allowing you to narrow your focus while searching for specific messages. In the instance that you experience an unexpected issue, you can always note the timestamp, and examine your service logs at this time to search for any clear root cause.  
+The other header, **Logs**, provides a helpful insight as to the activity that has been going on inside your service.
+You can filter based on the severity of each log message, allowing you to narrow your focus while searching for specific
+messages. In the instance that you experience an unexpected issue, you can always note the timestamp, and examine your
+service logs at this time to search for any clear root cause.  
 ![][image13]
 
-The **Insights** tab is also incredibly helpful for visualizing change in metrics over time, as well as trying to identify the underlying cause. It also provides information on lock contention, so you can identify any jobs that may be conflicting with your applications, for example. Additionally, you can also view your top queries in this tab, which can be very helpful in visualizing how often queries are called and the resulting execution time.
+The **Insights** tab is also incredibly helpful for visualizing change in metrics over time, as well as trying to
+identify the underlying cause. It also provides information on lock contention, so you can identify any jobs that may be
+conflicting with your applications, for example. Additionally, you can also view your top queries in this tab, which can
+be very helpful in visualizing how often queries are called and the resulting execution time.
 
 ![][image14]  
-This is just a subset of the amazing things that you can do through the Timescale Cloud Console, which is a very convenient way of monitoring, configuring, and managing your database.
+This is just a subset of the amazing things that you can do through the $CLOUD_LONG Console, which is a very
+convenient way of monitoring, configuring, and managing your database.
 
 ## Replicas & Forking
 
 ### Forking your service
 
-In some instances, it may be helpful to create a **fork** of your database for the purposes of troubleshooting, or to test the effects of a proposed change before doing so in production.
+In some instances, it may be helpful to create a **fork** of your database for the purposes of troubleshooting, or to
+test the effects of a proposed change before doing so in production.
 
-A **fork** is an exact copy of your database at a given time, which after the fork is created, diverges from your original database and is then treated as its own independent service where data is not replicated from the original.
+A **fork** is an exact copy of your database at a given time, which after the fork is created, diverges from your
+original database and is then treated as its own independent service where data is not replicated from the original.
 
-You can create a **fork** of your service by first migrating to the **Services** tab, selecting the **Operations** header, and then lastly the **Service management** section.
+You can create a **fork** of your service by first migrating to the **Services** tab, selecting the **Operations**
+header, and then lastly the **Service management** section.
 
-You are given the opportunity to create a **fork** of your service in the exact state it is in at that moment in time, or if you would prefer, make a recovery fork of your service to any point in the last 14 days using the backups taken from your environment.
+You are given the opportunity to create a **fork** of your service in the exact state it is in at that moment in time,
+or if you would prefer, make a recovery fork of your service to any point in the last 14 days using the backups taken
+from your environment.
 
 If you are not given the option to “Fork to a previous point in time”, it is likely that no backups are available yet.
 
@@ -1071,27 +1407,41 @@ If you are not given the option to “Fork to a previous point in time”, it is
 
 ### Read replicas
 
-A read replica is a read-only copy of your primary database that is kept in sync, replaying each transaction that occurs with WAL records shipped from the primary. This enables you to interact with up-to-date production data for analysis or to scale out reads beyond the limits of your primary data instance.
+A read replica is a read-only copy of your primary database that is kept in sync, replaying each transaction that occurs
+with WAL records shipped from the primary. This enables you to interact with up-to-date production data for analysis or
+to scale out reads beyond the limits of your primary data instance.
 
-You can create as many read replicas as you need. Each read replica appears as its own service. You use a unique connection string to interact with each read replica. This provides both security and resource isolation. To restrict access without isolation, you can create a read-only role for each Timescale Cloud service. Users with read-only permissions cannot access the primary data instance directly.
+You can create as many read replicas as you need. Each read replica appears as its own service. You use a unique
+connection string to interact with each read replica. This provides both security and resource isolation. To restrict
+access without isolation, you can create a read-only role for each $CLOUD_LONG service. Users with read-only
+permissions cannot access the primary data instance directly.
 
 To create a read replica:
 
-1. Navigate to the Timescale Cloud console, and select your desired service
+1. Navigate to the $CLOUD_LONG console, and select your desired service
 2. Click on the **Operations** header
 3. Click on the **Read replicas** section
 4. Select **Add read replica**, and select your desired configurations
-5. Make note of the connection information for your replica, as each connection string is unique, and different from your primary instance
+5. Make note of the connection information for your replica, as each connection string is unique, and different from
+   your primary instance
 
-To manage lag for your replicas, you can view the current replication lag under the **Operations** header as well, which will better help you understand trends affecting your replica’s ability to keep up with your primary.
+To manage lag for your replicas, you can view the current replication lag under the **Operations** header as well, which
+will better help you understand trends affecting your replica’s ability to keep up with your primary.
 
-If you note issues with replication lag, it is possible that you might benefit from adjusting the *max\_standby\_streaming\_delay* and *max\_standby\_archive\_delay* parameters, which can be set to configure the maximum amount of time that the database will wait before cancelling a transaction to apply pending WAL records.
+If you note issues with replication lag, it is possible that you might benefit from adjusting the
+*max\_standby\_streaming\_delay* and *max\_standby\_archive\_delay* parameters, which can be set to configure the
+maximum amount of time that the database will wait before cancelling a transaction to apply pending WAL records.
 
-This typically happens when a long running, expensive query generates a good deal of replication lag while the query runs, as conflicting WAL records need to wait for the transaction to complete before being applied. By setting the above parameters, we can avoid excessive replication lag – but it is important to balance this with your need for your long-running queries to complete, as cancelling them may affect your end users.
+This typically happens when a long running, expensive query generates a good deal of replication lag while the query
+runs, as conflicting WAL records need to wait for the transaction to complete before being applied. By setting the above
+parameters, we can avoid excessive replication lag – but it is important to balance this with your need for your
+long-running queries to complete, as cancelling them may affect your end users.
 
 ### HA replicas
 
-Timescale also offers HA replicas as a means of maintaining as close to an up-to-date copy of your primary database as possible, which you have the ability to failover to in disaster scenarios. These copies are hosted in different AWS AZs within the same region as your primary node, and can take over if your primary becomes unavailable.
+Timescale also offers HA replicas as a means of maintaining as close to an up-to-date copy of your primary database as
+possible, which you have the ability to failover to in disaster scenarios. These copies are hosted in different AWS AZs
+within the same region as your primary node, and can take over if your primary becomes unavailable.
 
 HA replicas can be both synchronous and asynchronous:
 
@@ -1109,21 +1459,27 @@ Asynchronous (ASYNC):
 
 ![][image16]
 
-To configure an HA replica, or to modify the configuration of an existing replica, you can go to the **Operations** header and select the **High availability** section.
+To configure an HA replica, or to modify the configuration of an existing replica, you can go to the **Operations**
+header and select the **High availability** section.
 
 There are a couple different configurations available:
 
 * **Non-production:** no replica, best for developer environments.
 
-* **High availability:** a single async replica in a different AWS availability zone from your primary. Provides high availability with cost efficiency. Best for production apps.
+* **High availability:** a single async replica in a different AWS availability zone from your primary. Provides high
+  availability with cost efficiency. Best for production apps.
 
-* **Highest availability:** two replicas in different AWS availability zones from your primary. Available replication modes are:
+* **Highest availability:** two replicas in different AWS availability zones from your primary. Available replication
+  modes are:
 
-   * **High performance** \- two async replicas. Provides the highest level of availability with two AZs and the ability to query the HA system. Best for absolutely critical apps.
+   * **High performance** \- two async replicas. Provides the highest level of availability with two AZs and the ability
+     to query the HA system. Best for absolutely critical apps.
 
-   * **High data integrity** \- one sync replica and one async replica. The sync replica is identical to the primary at all times. Best for apps that can tolerate no data loss.
+   * **High data integrity** \- one sync replica and one async replica. The sync replica is identical to the primary at
+     all times. Best for apps that can tolerate no data loss.
 
-You should select the appropriate configuration for your use case based on your tolerance for data loss, and desire for maximum performance.
+You should select the appropriate configuration for your use case based on your tolerance for data loss, and desire for
+maximum performance.
 
 [image1]: <data:image/png;base64,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>
 
