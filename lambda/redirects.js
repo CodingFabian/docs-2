@@ -830,6 +830,10 @@ module.exports = [
     to: "https://docs.timescale.com/self-hosted/latest/install/installation-linux/",
   },
   {
+    from: "/install/latest/installation-docker/",
+    to: "https://docs.timescale.com/self-hosted/latest/install/installation-docker/",
+  },
+  {
     from: "/latest/getting-started/setup",
     to: "https://docs.timescale.com/self-hosted/latest/install/",
   },
